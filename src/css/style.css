@@ -1,0 +1,419 @@
+/* -------------------- Общие стили -------------------- */
+body {
+    margin: 0;
+    padding: 0;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+    background-color: #171618;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    height: 100vh;
+}
+
+/* -------------------- Контейнер -------------------- */
+.container {
+    color: #ffffff;
+    width: 100%;
+    max-width: 400px;
+    padding: 20px;
+    margin-top: 100px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 32px;
+    position: relative;
+}
+
+/* -------------------- Dropdown меню -------------------- */
+.dropdown {
+    position: relative;
+    display: inline-block;
+    width: 100%;
+    max-width: 400px;
+    margin-bottom: 20px;
+}
+
+.dropbtn {
+    background-color: #121112;
+    color: #ffffff;
+    padding: 15px 20px;
+    font-size: 16px;
+    font-weight: 600;
+    border: 2px solid #2c2b2d;
+    border-radius: 15px;
+    width: 100%;
+    text-align: left;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    box-sizing: border-box;
+    cursor: pointer;
+    outline: none;
+    transition: all 0.2s ease;
+}
+
+.dropbtn:hover {
+    background-color: #2c2b2d;
+    border-color: #3c3b3d;
+}
+
+.dropbtn:focus {
+    border-color: #0a0a0a;
+}
+
+.dropbtn::after {
+    content: '▼';
+    font-size: 12px;
+    transition: transform 0.3s ease;
+    color: #919093;
+}
+
+.dropbtn.active::after {
+    transform: rotate(180deg);
+}
+
+.dropdown-content {
+    display: none;
+    position: absolute;
+    background-color: #121112;
+    min-width: 100%;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.25);
+    border-radius: 15px;
+    z-index: 1;
+    top: calc(100% + 8px);
+    left: 0;
+    overflow: hidden;
+    border: 2px solid #2c2b2d;
+}
+
+.dropdown-content.show {
+    display: block;
+}
+
+.dropdown-item {
+    color: #ffffff;
+    padding: 15px 20px;
+    text-decoration: none;
+    display: block;
+    cursor: pointer;
+    font-size: 16px;
+    font-weight: 600;
+    transition: background-color 0.2s ease;
+}
+
+.dropdown-item:hover {
+    background-color: #2c2b2d;
+}
+
+.dropdown-item:active {
+    background-color: #3c3b3d;
+}
+
+/* -------------------- Заголовок -------------------- */
+.title-container h1 {
+    font-size: 36px;
+    font-weight: 700;
+    margin: 0;
+    display: flex;
+    justify-content: center;
+    gap: 8px;
+}
+
+/* -------------------- Подзаголовок -------------------- */
+.step-container .subtitle {
+    color: #919093;
+    text-align: center;
+    margin: 0;
+    font-size: 16px;
+    font-weight: 400;
+    max-width: 320px;
+}
+
+/* -------------------- Кнопки -------------------- */
+.button-container {
+    position: fixed;
+    bottom: 40px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 100%;
+    max-width: 400px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    padding: 0 20px;
+}
+
+.button {
+    background-color: #171618;
+    color: #fff;
+    padding: 15px 30px;
+    border: none;
+    border-radius: 15px;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.25);
+    transition: background-color 0.2s ease;
+}
+
+.button:hover {
+    background-color: #2c2b2d;
+}
+
+/* -------------------- Mnemonic -------------------- */
+.mnemonic-column {
+    list-style-position: inside;
+    padding-left: 0;
+    font-size: 18px;
+    color: #eee;
+    user-select: text;
+}
+
+.mnemonic-column li {
+    margin-bottom: 8px;
+    font-weight: 600;
+}
+
+.mnemonic-input {
+    width: 100%;
+    max-width: 400px;
+    min-height: 120px;
+    padding: 10px;
+    border-radius: 10px;
+    border: 2px solid #2c2b2d;
+    background-color: #121112;
+    color: #2c2b2d;
+    resize: vertical;
+    font-size: 16px;
+    font-family: inherit;
+    box-sizing: border-box;
+    outline: none;
+    transition: border-color 0.2s ease;
+}
+
+.mnemonic-input:focus {
+    border-color: #0a0a0a;
+}
+
+/* -------------------- Input container -------------------- */
+.input-container {
+    width: 100%;
+    max-width: 400px;
+    padding: 0 20px;
+}
+
+/* -------------------- Amount input (с обводкой как dropbtn и без стрелок) -------------------- */
+.amount-input {
+    width: 100%;
+    padding: 15px 20px;
+    font-size: 16px;
+    font-weight: 600;
+    border: 2px solid #2c2b2d;
+    border-radius: 15px;
+    background-color: #121112;
+    color: #fff;
+    box-sizing: border-box;
+    outline: none;
+    margin-bottom: 10px;
+    -moz-appearance: textfield;
+    appearance: textfield;
+}
+
+.amount-input::-webkit-outer-spin-button,
+.amount-input::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+
+/* -------------------- Coin selector (список как на скриншоте) -------------------- */
+#coinSelector {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+}
+
+.coin-item {
+    display: flex;
+    align-items: center;
+    padding: 16px 0;
+    color: #919093;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: color 0.2s ease;
+    border-bottom: 1px solid rgba(44, 43, 45, 0.3);
+    position: relative;
+}
+
+.coin-item:last-child {
+    border-bottom: none;
+}
+
+.coin-item:hover {
+    color: #ffffff;
+}
+
+.coin-item.selected {
+    color: #ffffff;
+}
+
+.coin-item::before {
+    content: '';
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background-color: #2c2b2d;
+    margin-right: 16px;
+    flex-shrink: 0;
+}
+
+.coin-item[data-coin="SOL"]::before {
+    background: linear-gradient(135deg, #9945FF, #14F195);
+}
+
+.coin-item[data-coin="USDC"]::before {
+    background: linear-gradient(135deg, #2775CA, #4DB8E8);
+}
+
+.coin-btn {
+    width: 100%;
+    padding: 12px;
+    background-color: #121112;
+    color: #fff;
+    border: 2px solid #2c2b2d;
+    border-radius: 10px;
+    cursor: pointer;
+    font-weight: 600;
+    font-size: 16px;
+    transition: background-color 0.2s ease;
+}
+
+.coin-btn:hover {
+    background-color: #2c2b2d;
+}
+
+/* -------------------- QR-код -------------------- */
+.qrcode-container {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    margin: 40px 0;
+    min-height: 250px;
+    border-radius: 15px;
+    background-color: #121112;
+    border: 2px solid #2c2b2d;
+    padding: 20px;
+}
+
+.qrcode-container p {
+    color: #919093;
+    text-align: center;
+    font-size: 16px;
+    margin: 0;
+}
+
+/* -------------------- Индикатор выбранной сети -------------------- */
+.selected-network {
+    color: #919093;
+    font-size: 16px;
+    font-weight: 400;
+    text-align: center;
+    margin-top: 10px;
+}
+
+.selected-network span {
+    color: #ffffff;
+    font-weight: 600;
+}
+
+/* Информация о платеже над QR-кодом */
+.payment-info {
+    position: absolute;
+    top: -30px;
+    background-color: #171618;
+    padding: 10px 20px;
+    border-radius: 12px;
+    border: 2px solid #2c2b2d;
+    text-align: center;
+    white-space: nowrap;
+    max-width: calc(100% - 40px);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    z-index: 2;
+}
+
+.payment-amount {
+    font-size: 22px;
+    font-weight: 700;
+    color: #ffffff;
+    margin-bottom: 4px;
+    line-height: 1.2;
+}
+
+.payment-network {
+    font-size: 12px;
+    color: #919093;
+    font-weight: 400;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-top: 2px;
+}
+
+/* Обертка для QR-кода */
+.qr-code-wrapper {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 15px;
+    background: #ffffff;
+    border-radius: 12px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.25);
+    margin-top: 10px;
+}
+
+/* Адаптивность для мобильных */
+@media (max-width: 480px) {
+    .payment-info {
+        font-size: 18px;
+        padding: 8px 16px;
+        top: -24px;
+        max-width: calc(100% - 20px);
+    }
+
+    .payment-amount {
+        font-size: 18px;
+        margin-bottom: 2px;
+    }
+
+    .payment-network {
+        font-size: 10px;
+        margin-top: 1px;
+    }
+
+    .coin-item {
+        padding: 14px 0;
+        font-size: 15px;
+    }
+
+    .coin-item::before {
+        width: 28px;
+        height: 28px;
+        margin-right: 12px;
+    }
+}
+
+@media (max-width: 320px) {
+    .coin-item {
+        padding: 12px 0;
+        font-size: 14px;
+    }
+
+    .coin-item::before {
+        width: 24px;
+        height: 24px;
+        margin-right: 10px;
+    }
+}

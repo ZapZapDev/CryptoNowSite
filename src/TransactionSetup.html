@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>QR Code</title>
+    <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+
+<div class="container">
+    <div class="dropdown">
+        <button class="dropbtn" id="dropdownBtn">Выбери сеть</button>
+        <div class="dropdown-content" id="dropdownContent">
+            <div class="dropdown-item" data-network="solana">Solana</div>
+        </div>
+    </div>
+
+    <div id="coinSelector" style="display: none;">
+        <div class="coin-item" data-coin="SOL">SOL</div>
+        <div class="coin-item" data-coin="USDC">USDC</div>
+    </div>
+
+    <div id="amountSection" style="display: none;">
+        <input type="number" id="amountInput" placeholder="Введите сумму" class="amount-input">
+        <button id="generateBtn" class="button">Сгенерировать QR</button>
+    </div>
+
+    <div id="qrcode" class="qrcode-container" style="display: none;">
+        <div id="paymentInfo" class="payment-info"></div>
+        <!-- Здесь будет QR-код -->
+    </div>
+
+    <div class="button-container">
+        <button id="backBtn" class="button" type="button">Назад</button>
+    </div>
+</div>
+
+<script type="module" src="typescript/TransactionSetup.ts"></script>
+</body>
+</html>
