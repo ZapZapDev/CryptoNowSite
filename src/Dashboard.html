@@ -4,17 +4,26 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Dashboard</title>
-  <link rel="stylesheet" href="css/style.css" />
+  <link href="css/main.css" rel="stylesheet" />
 </head>
-<body>
+<body class="m-0 p-0 font-system bg-crypto-dark flex justify-center items-start min-h-screen">
 
-<div class="container">
-  <div class="title-container">
-    <h1>Dashboard</h1>
+<div class="text-white w-full max-w-crypto px-5 mt-100 flex flex-col items-center gap-8 relative md:mt-120 lg:max-w-lg">
+  <div class="w-full">
+    <div class="flex justify-center">
+      <h1 class="text-4xl md:text-5xl lg:text-6xl font-bold m-0 flex justify-center gap-2">Dashboard</h1>
+    </div>
   </div>
 
-  <div class="button-container">
-    <button id="qrButton" class="button" type="button" onclick="window.location.href='TransactionSetup.html'">Получить</button>
+  <div class="fixed bottom-10 left-1/2 transform -translate-x-1/2 w-full max-w-crypto flex flex-col gap-4 px-5 md:relative md:bottom-auto md:left-auto md:transform-none md:mt-8">
+    <button
+            id="qrButton"
+            type="button"
+            onclick="window.location.href='TransactionSetup.html'"
+            class="bg-crypto-dark text-white py-4 px-8 border-none rounded-2xl text-base font-semibold cursor-pointer shadow-crypto transition-colors duration-200 hover:bg-crypto-border md:py-5 md:text-lg"
+    >
+      Получить
+    </button>
   </div>
 </div>
 

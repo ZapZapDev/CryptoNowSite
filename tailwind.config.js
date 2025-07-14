@@ -24,12 +24,17 @@ module.exports = {
             spacing: {
                 '18': '4.5rem',
                 '100': '25rem',
+                '120': '30rem',
             },
             fontSize: {
-                '22': '1.375rem',
+                '22': ['1.375rem', '1.2'],
             },
             letterSpacing: {
                 'crypto': '0.5px',
+            },
+            boxShadow: {
+                'crypto': '0 2px 4px rgba(0, 0, 0, 0.25)',
+                'crypto-lg': '0 4px 8px rgba(0, 0, 0, 0.25)',
             },
             animation: {
                 'dropdown': 'dropdown 0.3s ease',
@@ -39,6 +44,9 @@ module.exports = {
                     '0%': { transform: 'rotate(0deg)' },
                     '100%': { transform: 'rotate(180deg)' },
                 }
+            },
+            transitionProperty: {
+                'dropdown': 'transform',
             }
         },
     },

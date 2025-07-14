@@ -34,20 +34,20 @@ window.addEventListener("DOMContentLoaded", () => {
 
         function createColumn(wordsArray: string[], startIndex: number): string {
             return `
-        <ol start="${startIndex}" class="mnemonic-column">
-          ${wordsArray.map(word => `<li>${word}</li>`).join("")}
+        <ol start="${startIndex}" class="list-decimal list-inside pl-0 text-lg text-gray-200 select-text md:text-xl lg:text-2xl">
+          ${wordsArray.map(word => `<li class="mb-2 font-semibold">${word}</li>`).join("")}
         </ol>
       `;
         }
 
         mnemonicContainer.innerHTML = `
-      <div style="display:flex; justify-content:center; gap: 40px;">
+      <div class="flex justify-center gap-10 md:gap-12 lg:gap-16">
         ${createColumn(firstCol, 1)}
         ${createColumn(secondCol, 7)}
       </div>
     `;
 
-        addressContainer.innerHTML = `<p><strong>Адрес кошелька:</strong> ${publicKey}</p>`;
+        addressContainer.innerHTML = `<p class="text-sm md:text-base"><strong>Адрес кошелька:</strong> ${publicKey}</p>`;
 
     } catch (err) {
         console.error(err);
