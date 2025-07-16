@@ -7,10 +7,8 @@ window.Buffer = Buffer;
 
 window.addEventListener("DOMContentLoaded", () => {
     try {
-        // Генерация сидфразы
         const mnemonic = bip39.generateMnemonic();
 
-        // Получаем seed и keypair
         const seed = bip39.mnemonicToSeedSync(mnemonic, "");
         const hd = HDKey.fromMasterSeed(seed.toString("hex"));
         const path = "m/44'/501'/0'/0'";
@@ -18,39 +16,56 @@ window.addEventListener("DOMContentLoaded", () => {
         const keypair = Keypair.fromSeed(child.privateKey);
         const publicKey = keypair.publicKey.toBase58();
 
-        // Сохраняем адрес в localStorage
         localStorage.setItem("walletAddress", publicKey);
 
-        // Вывод сидфразы в колонки с нумерацией
         const mnemonicContainer = document.getElementById("mnemonic-container");
-        const addressContainer = document.getElementById("address-container");
-        if (!mnemonicContainer || !addressContainer) throw new Error("Элементы не найдены");
+        if (!mnemonicContainer) throw new Error("Element not found");
 
         const words = mnemonic.split(" ");
-        if (words.length !== 12) throw new Error("Сидфраза не 12 слов");
+        if (words.length !== 12) throw new Error("Not 12 words");
 
-        const firstCol = words.slice(0, 6);
-        const secondCol = words.slice(6);
-
-        function createColumn(wordsArray: string[], startIndex: number): string {
-            return `
-        <ol start="${startIndex}" class="list-decimal list-inside pl-0 text-lg text-gray-200 select-text md:text-xl lg:text-2xl">
-          ${wordsArray.map(word => `<li class="mb-2 font-semibold">${word}</li>`).join("")}
-        </ol>
-      `;
-        }
+        const wordsHtml = words.map((word, index) => `
+            <div class="bg-crypto-card border-2 border-crypto-border rounded-lg p-2 flex items-center justify-between min-w-0">
+                <span class="text-crypto-text-muted text-xs font-semibold mr-2 flex-shrink-0">${index + 1}.</span>
+                <span class="text-white text-xs font-semibold truncate">${word}</span>
+            </div>
+        `).join("");
 
         mnemonicContainer.innerHTML = `
-      <div class="flex justify-center gap-10 md:gap-12 lg:gap-16">
-        ${createColumn(firstCol, 1)}
-        ${createColumn(secondCol, 7)}
-      </div>
-    `;
+            <div class="w-full max-w-xs mx-auto">
+                <div class="grid grid-cols-2 gap-2 mb-3">
+                    ${wordsHtml}
+                </div>
+                <div class="flex justify-end">
+                    <button 
+                        id="copyBtn" 
+                        class="bg-crypto-card border-2 border-crypto-border rounded-lg px-3 py-2 flex items-center gap-1.5 hover:bg-crypto-border hover:scale-105 transition-all duration-200 active:scale-95"
+                    >
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-crypto-text-muted">
+                            <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                            <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                        </svg>
+                        <span class="text-crypto-text-muted text-xs font-semibold">Copy</span>
+                    </button>
+                </div>
+            </div>
+        `;
 
-        addressContainer.innerHTML = `<p class="text-sm md:text-base"><strong>Адрес кошелька:</strong> ${publicKey}</p>`;
+        const copyBtn = document.getElementById("copyBtn");
+        copyBtn?.addEventListener("click", async () => {
+            try {
+                await navigator.clipboard.writeText(mnemonic);
+                copyBtn.classList.add("scale-110", "bg-crypto-border-hover");
+                setTimeout(() => {
+                    copyBtn.classList.remove("scale-110", "bg-crypto-border-hover");
+                }, 150);
+            } catch (err) {
+                console.error("Failed to copy:", err);
+            }
+        });
 
     } catch (err) {
         console.error(err);
-        alert("Ошибка генерации кошелька");
+        alert("Wallet generation error");
     }
 });

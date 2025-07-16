@@ -14,7 +14,6 @@ async function generateQR(amountValue: string, coin: string): Promise<void> {
     const paymentInfo = document.getElementById("paymentInfo") as HTMLDivElement;
     const publicKeyString = localStorage.getItem("walletAddress");
 
-    // Проверка суммы – если некорректна, ничего не делаем
     if (!publicKeyString || !amountValue || isNaN(Number(amountValue)) || Number(amountValue) <= 0) {
         return;
     }
@@ -27,8 +26,8 @@ async function generateQR(amountValue: string, coin: string): Promise<void> {
         let urlParams: any = {
             recipient,
             amount,
-            label: `Оплата ${coin}`,
-            message: "Оплата через Solana Pay"
+            label: `Payment ${coin}`,
+            message: "Payment via Solana Pay"
         };
 
         if (coin === "USDC") {
@@ -38,13 +37,11 @@ async function generateQR(amountValue: string, coin: string): Promise<void> {
         const url = encodeURL(urlParams);
         const qr = createQR(url, 250, 'transparent');
 
-        // Добавляем информацию о платеже
         paymentInfo.innerHTML = `
-            <div class="payment-amount">${amountValue} ${coin}</div>
-            <div class="payment-network">Сеть: Solana</div>
+            <div class="text-22 font-bold text-white mb-1 leading-tight">${amountValue} ${coin}</div>
+            <div class="text-xs text-crypto-text-muted font-normal uppercase tracking-crypto mt-1">Network: Solana</div>
         `;
 
-        // Очищаем контейнер и добавляем QR-код
         const existingQR = qrContainer.querySelector('.qr-code-wrapper');
         if (existingQR) {
             existingQR.remove();
@@ -57,7 +54,6 @@ async function generateQR(amountValue: string, coin: string): Promise<void> {
 
         qrContainer.style.display = "flex";
 
-        // Скрываем все кроме QR и кнопки назад
         const dropdown = document.querySelector(".dropdown") as HTMLDivElement;
         const coinSelector = document.getElementById("coinSelector") as HTMLDivElement;
         const amountSection = document.getElementById("amountSection") as HTMLDivElement;
@@ -66,14 +62,19 @@ async function generateQR(amountValue: string, coin: string): Promise<void> {
         if (coinSelector) coinSelector.style.display = "none";
         if (amountSection) amountSection.style.display = "none";
 
+        // Show back button when QR is shown
+        const backBtn = document.getElementById("backBtn");
+        if (backBtn) backBtn.style.display = "block";
+
     } catch (error) {
-        console.error("Ошибка генерации QR:", error);
+        console.error("QR generation error:", error);
     }
 }
 
 window.addEventListener("DOMContentLoaded", () => {
     const dropdownBtn = document.getElementById("dropdownBtn") as HTMLButtonElement;
     const dropdownContent = document.getElementById("dropdownContent") as HTMLDivElement;
+    const dropdownArrow = document.getElementById("dropdownArrow") as HTMLSpanElement;
     const dropdownItems = document.querySelectorAll(".dropdown-item") as NodeListOf<HTMLDivElement>;
     const backBtn = document.getElementById("backBtn") as HTMLButtonElement;
     const qrContainer = document.getElementById("qrcode") as HTMLDivElement;
@@ -87,18 +88,19 @@ window.addEventListener("DOMContentLoaded", () => {
 
     dropdownBtn.addEventListener("click", (e) => {
         e.stopPropagation();
-        dropdownContent.classList.toggle("show");
-        dropdownBtn.classList.toggle("active");
+        dropdownContent.classList.toggle("hidden");
+        dropdownArrow.classList.toggle("dropdown-arrow-rotate");
     });
 
     dropdownItems.forEach(item => {
         item.addEventListener("click", () => {
             const selectedText = item.textContent || "";
-            dropdownBtn.textContent = selectedText;
-            dropdownContent.classList.remove("show");
-            dropdownBtn.classList.remove("active");
+            dropdownBtn.childNodes[0].textContent = selectedText;
+            dropdownContent.classList.add("hidden");
+            dropdownArrow.classList.remove("dropdown-arrow-rotate");
 
             coinSelector.style.display = "flex";
+            coinSelector.classList.remove("hidden");
         });
     });
 
@@ -107,11 +109,13 @@ window.addEventListener("DOMContentLoaded", () => {
         item.addEventListener("click", () => {
             selectedCoin = item.getAttribute("data-coin") || "USDC";
 
-            // Добавляем визуальное выделение выбранной монеты
-            coinItems.forEach(coin => coin.classList.remove("selected"));
-            item.classList.add("selected");
+            coinItems.forEach(coin => coin.classList.remove("text-white"));
+            coinItems.forEach(coin => coin.classList.add("text-crypto-text-muted"));
+            item.classList.remove("text-crypto-text-muted");
+            item.classList.add("text-white");
 
             amountSection.style.display = "block";
+            amountSection.classList.remove("hidden");
         });
     });
 
@@ -122,9 +126,9 @@ window.addEventListener("DOMContentLoaded", () => {
 
     window.addEventListener("click", (e) => {
         const target = e.target as HTMLElement;
-        if (!target.matches('.dropbtn') && !target.closest('.dropdown')) {
-            dropdownContent.classList.remove("show");
-            dropdownBtn.classList.remove("active");
+        if (!target.closest('.dropdown')) {
+            dropdownContent.classList.add("hidden");
+            dropdownArrow.classList.remove("dropdown-arrow-rotate");
         }
     });
 

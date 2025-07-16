@@ -1,35 +1,35 @@
 <!DOCTYPE html>
-<html lang="ru">
+<html lang="en">
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>История транзакций</title>
+    <title>Transaction History</title>
     <link href="css/main.css" rel="stylesheet" />
 </head>
-<body class="m-0 p-0 font-system bg-crypto-dark flex justify-center items-start min-h-screen">
+<body class="m-0 p-0 font-system bg-crypto-dark flex justify-center items-start min-h-screen overflow-x-hidden">
 
-<div class="text-white w-full max-w-crypto px-5 mt-100 flex flex-col items-center gap-8 relative md:mt-120 lg:max-w-lg">
+<button
+        onclick="window.location.href='Dashboard.html'"
+        class="fixed top-6 left-6 z-50 bg-crypto-card border-2 border-crypto-border rounded-xl w-10 h-10 flex items-center justify-center hover:bg-crypto-border hover:scale-105 transition-all duration-200"
+>
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-crypto-text-muted">
+        <path d="m15 18-6-6 6-6"/>
+    </svg>
+</button>
+
+<div class="text-white w-full max-w-crypto px-5 pt-16 pb-32 flex flex-col items-center gap-8 relative sm:pt-20 md:pt-25 lg:gap-12">
     <div class="w-full">
         <div class="flex justify-center">
-            <h1 class="text-4xl md:text-5xl lg:text-6xl font-bold m-0 flex justify-center gap-2">История</h1>
+            <h1 class="text-4xl font-bold m-0 flex justify-center gap-2 sm:text-5xl md:text-6xl lg:text-7xl">History</h1>
         </div>
     </div>
 
     <div class="w-full">
-        <p class="text-crypto-text-muted text-center m-0 text-base font-normal max-w-80 mx-auto md:text-lg lg:text-xl">
-            Здесь будут отображаться ваши транзакции
+        <p class="text-crypto-text-muted text-center m-0 text-lg font-normal max-w-80 mx-auto sm:text-xl md:text-2xl lg:max-w-96">
+            Your transactions will be displayed here
         </p>
     </div>
 
-    <div class="fixed bottom-10 left-1/2 transform -translate-x-1/2 w-full max-w-crypto flex flex-col gap-4 px-5 md:relative md:bottom-auto md:left-auto md:transform-none md:mt-8">
-        <button
-                type="button"
-                onclick="window.location.href='Dashboard.html'"
-                class="bg-crypto-dark text-white py-4 px-8 border-none rounded-2xl text-base font-semibold cursor-pointer shadow-crypto transition-colors duration-200 hover:bg-crypto-border md:py-5 md:text-lg"
-        >
-            Назад
-        </button>
-    </div>
 </div>
 
 <script type="module" src="typescript/TransactionHistory.ts"></script>

@@ -1,40 +1,34 @@
 <!DOCTYPE html>
-<html lang="ru">
+<html lang="en">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Создать Кошелек</title>
+  <title>Create Wallet</title>
   <link href="css/main.css" rel="stylesheet" />
 </head>
-<body class="m-0 p-0 font-system bg-crypto-dark flex justify-center items-start min-h-screen">
+<body class="m-0 p-0 font-system bg-crypto-dark flex justify-center items-start min-h-screen overflow-x-hidden">
 
-<div class="text-white w-full max-w-crypto px-5 mt-100 flex flex-col items-center gap-8 relative md:mt-120 lg:max-w-lg">
-  <div class="w-full">
-    <div class="flex justify-center">
-      <h1 class="text-4xl md:text-5xl lg:text-6xl font-bold m-0 flex justify-center gap-2">Твоя сид-фраза</h1>
-    </div>
+<div class="text-white w-full max-w-crypto px-4 pt-6 pb-32 flex flex-col items-center gap-4 relative">
+  <div class="w-full text-center">
+    <h1 class="text-xl font-bold m-0 text-center">Your Seed Phrase</h1>
   </div>
 
   <div class="w-full">
-    <p class="text-crypto-text-muted text-center m-0 text-base font-normal max-w-80 mx-auto md:text-lg lg:text-xl">
-      Запиши эти 12 слов по порядку и береги, это ключ к твоей свободе.
+    <p class="text-crypto-text-muted text-center m-0 text-sm font-normal max-w-60 mx-auto">
+      Write down these 12 words in order and keep them safe, this is the key to your freedom.
     </p>
   </div>
 
-  <div id="mnemonic-container" class="w-full flex justify-center">
-    <!-- Mnemonic будет добавлен через JS -->
+  <div id="mnemonic-container" class="w-full flex justify-center px-2">
   </div>
 
-  <div id="address-container" class="w-full mt-10 text-gray-400 text-center text-sm md:text-base">
-    <!-- Адрес будет добавлен через JS -->
-  </div>
-
-  <div class="fixed bottom-10 left-1/2 transform -translate-x-1/2 w-full max-w-crypto flex flex-col gap-4 px-5 md:relative md:bottom-auto md:left-auto md:transform-none md:mt-8">
+  <div class="fixed bottom-8 left-1/2 transform -translate-x-1/2 w-full max-w-crypto flex flex-col gap-3 px-4">
     <button
             type="button"
-            class="bg-crypto-dark text-white py-4 px-8 border-none rounded-2xl text-base font-semibold cursor-pointer shadow-crypto transition-colors duration-200 hover:bg-crypto-border md:py-5 md:text-lg"
+            onclick="window.location.href='Dashboard.html'"
+            class="bg-crypto-dark text-white py-3 px-6 border-none rounded-2xl text-base font-semibold cursor-pointer shadow-crypto transition-colors duration-200 hover:bg-crypto-border"
     >
-      Продолжить
+      Continue
     </button>
   </div>
 </div>

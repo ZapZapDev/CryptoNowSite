@@ -23,11 +23,13 @@ module.exports = {
             },
             spacing: {
                 '18': '4.5rem',
-                '100': '25rem',
-                '120': '30rem',
+                '25': '6.25rem',
+                '32': '2rem',
+                '40': '2.5rem',
             },
             fontSize: {
                 '22': ['1.375rem', '1.2'],
+                '36': ['2.25rem', '1.1'],
             },
             letterSpacing: {
                 'crypto': '0.5px',

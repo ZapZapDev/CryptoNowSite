@@ -17,13 +17,41 @@
     --max-width-crypto: 400px;
 
     --spacing-18: 4.5rem;
-    --spacing-100: 25rem;
-    --spacing-120: 30rem;
+    --spacing-25: 6.25rem;
+    --spacing-32: 2rem;
+    --spacing-40: 2.5rem;
 
     --font-size-22: 1.375rem;
+    --font-size-36: 2.25rem;
 
     --letter-spacing-crypto: 0.5px;
 
     --box-shadow-crypto: 0 2px 4px rgba(0, 0, 0, 0.25);
     --box-shadow-crypto-lg: 0 4px 8px rgba(0, 0, 0, 0.25);
+}
+
+.dropdown-arrow-rotate {
+    transform: rotate(180deg);
+}
+
+.qr-code-wrapper {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 15px;
+    background: #ffffff;
+    border-radius: 12px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.25);
+    margin-top: 10px;
+}
+
+input[type="number"]::-webkit-outer-spin-button,
+input[type="number"]::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+
+input[type="number"] {
+    -moz-appearance: textfield;
+    appearance: textfield;
 }

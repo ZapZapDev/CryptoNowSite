@@ -1,38 +1,38 @@
 <!DOCTYPE html>
-<html lang="ru">
+<html lang="en">
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>CryptoNow Start</title>
     <link href="css/main.css" rel="stylesheet" />
 </head>
-<body class="m-0 p-0 font-system bg-crypto-dark flex justify-center items-start min-h-screen">
+<body class="m-0 p-0 font-system bg-crypto-dark flex justify-center items-start min-h-screen overflow-x-hidden">
 
-<div class="text-white w-full max-w-crypto px-5 mt-100 flex flex-col items-center gap-8 relative md:mt-120 lg:max-w-lg">
+<div class="text-white w-full max-w-crypto px-5 pt-16 pb-32 flex flex-col items-center gap-8 relative sm:pt-20 md:pt-25 lg:gap-12">
     <div class="w-full">
         <div class="flex justify-center">
-            <h1 class="text-4xl md:text-5xl lg:text-6xl font-bold m-0 flex justify-center gap-2">CryptoNow!</h1>
+            <h1 class="text-4xl font-bold m-0 flex justify-center gap-2 sm:text-5xl md:text-6xl lg:text-7xl">CryptoNow!</h1>
         </div>
     </div>
 
     <div class="w-full">
-        <p class="text-crypto-text-muted text-center m-0 text-base font-normal max-w-80 mx-auto md:text-lg lg:text-xl">
-            Когда всё под твоим контролем — это и есть свобода
+        <p class="text-crypto-text-muted text-center m-0 text-lg font-normal max-w-80 mx-auto sm:text-xl md:text-2xl lg:max-w-96">
+            When everything is under your control — that's freedom
         </p>
     </div>
 
-    <div class="fixed bottom-10 left-1/2 transform -translate-x-1/2 w-full max-w-crypto flex flex-col gap-4 px-5 md:relative md:bottom-auto md:left-auto md:transform-none md:mt-8">
+    <div class="fixed bottom-10 left-1/2 transform -translate-x-1/2 w-full max-w-crypto flex flex-col gap-4 px-5">
         <button
                 onclick="window.location.href='WriteWallet.html'"
-                class="bg-crypto-dark text-white py-4 px-8 border-none rounded-2xl text-base font-semibold cursor-pointer shadow-crypto transition-colors duration-200 hover:bg-crypto-border md:py-5 md:text-lg"
+                class="bg-crypto-dark text-white py-4 px-7 border-none rounded-2xl text-lg font-semibold cursor-pointer shadow-crypto transition-colors duration-200 hover:bg-crypto-border sm:py-5 sm:px-8 sm:text-xl"
         >
-            Создать Кошелек
+            Create Wallet
         </button>
         <button
                 onclick="window.location.href='ImportWallet.html'"
-                class="bg-crypto-dark text-white py-4 px-8 border-none rounded-2xl text-base font-semibold cursor-pointer shadow-crypto transition-colors duration-200 hover:bg-crypto-border md:py-5 md:text-lg"
+                class="bg-crypto-dark text-white py-4 px-7 border-none rounded-2xl text-lg font-semibold cursor-pointer shadow-crypto transition-colors duration-200 hover:bg-crypto-border sm:py-5 sm:px-8 sm:text-xl"
         >
-            Импортировать
+            Import
         </button>
     </div>
 </div>
