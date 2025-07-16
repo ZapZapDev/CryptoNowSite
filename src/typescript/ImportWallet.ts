@@ -5,19 +5,36 @@ import { Buffer } from "buffer";
 
 window.Buffer = Buffer;
 
-const importBtn = document.getElementById("button") as HTMLButtonElement | null;
-const mnemonicInput = document.getElementById("mnemonicInput") as HTMLTextAreaElement | null;
+const importBtn = document.getElementById("importButton") as HTMLButtonElement;
+const mnemonicInput = document.getElementById("mnemonicInput") as HTMLTextAreaElement;
+const pasteBtn = document.getElementById("pasteBtn") as HTMLButtonElement;
 
+// Активация кнопки при вводе
+mnemonicInput?.addEventListener("input", () => {
+    importBtn.disabled = !mnemonicInput.value.trim();
+});
+
+// Paste функционал
+pasteBtn?.addEventListener("click", async () => {
+    try {
+        const text = await navigator.clipboard.readText();
+        mnemonicInput.value = text.trim();
+        importBtn.disabled = !text.trim(); // Активируем кнопку после paste
+    } catch (err) {
+        console.log("Paste failed");
+    }
+});
+
+// Import функционал
 importBtn?.addEventListener("click", () => {
-    const mnemonic = mnemonicInput?.value.trim();
+    const mnemonic = mnemonicInput.value.trim();
 
     if (!mnemonic) {
         alert("Введите сид-фразу.");
         return;
     }
 
-    const isValid = bip39.validateMnemonic(mnemonic);
-    if (!isValid) {
+    if (!bip39.validateMnemonic(mnemonic)) {
         alert("Неудача: сид-фраза неверна.");
         return;
     }
@@ -25,19 +42,10 @@ importBtn?.addEventListener("click", () => {
     try {
         const seed = bip39.mnemonicToSeedSync(mnemonic, "");
         const hd = HDKey.fromMasterSeed(seed.toString("hex"));
-        const path = "m/44'/501'/0'/0'";
-        const child = hd.derive(path);
+        const child = hd.derive("m/44'/501'/0'/0'");
         const keypair = Keypair.fromSeed(child.privateKey);
-        const publicKey = keypair.publicKey.toBase58();-
 
-        // Сохраняем адрес в localStorage
-        localStorage.setItem("walletAddress", publicKey);
-
-        // alert(`Адрес кошелька:\n${publicKey}\n\nУспешно!`);
-
-        // ✅ Выводим весь localStorage алертом
-        alert(`LocalStorage:\n${JSON.stringify(localStorage, null, 2)}`);
-
+        localStorage.setItem("walletAddress", keypair.publicKey.toBase58());
         window.location.href = "Dashboard.html";
 
     } catch (err) {
