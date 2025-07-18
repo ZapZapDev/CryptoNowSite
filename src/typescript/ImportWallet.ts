@@ -19,23 +19,23 @@ pasteBtn?.addEventListener("click", async () => {
     try {
         const text = await navigator.clipboard.readText();
         mnemonicInput.value = text.trim();
-        importBtn.disabled = !text.trim(); // Активируем кнопку после paste
+        importBtn.disabled = !text.trim();
     } catch (err) {
         console.log("Paste failed");
     }
 });
 
-// Import функционал
+// Import функционал с сохранением приватного ключа
 importBtn?.addEventListener("click", () => {
     const mnemonic = mnemonicInput.value.trim();
 
     if (!mnemonic) {
-        alert("Введите сид-фразу.");
+        alert("Enter a sidephrase");
         return;
     }
 
     if (!bip39.validateMnemonic(mnemonic)) {
-        alert("Неудача: сид-фраза неверна.");
+        alert("Failure: the seed phrase is incorrect");
         return;
     }
 
@@ -45,10 +45,14 @@ importBtn?.addEventListener("click", () => {
         const child = hd.derive("m/44'/501'/0'/0'");
         const keypair = Keypair.fromSeed(child.privateKey);
 
+
         localStorage.setItem("walletAddress", keypair.publicKey.toBase58());
+
+        alert(`LocalStorage:\n${JSON.stringify(localStorage, null, 2)}`);
+
         window.location.href = "Dashboard.html";
 
     } catch (err) {
-        alert("Ошибка при восстановлении кошелька.");
+        alert("Failed to import wallet");
     }
 });
