@@ -17,19 +17,23 @@
     </svg>
 </button>
 
-<div class="text-white w-full max-w-crypto px-5 pt-16 pb-32 flex flex-col items-center gap-8 relative sm:pt-20 md:pt-25 lg:gap-12">
+<div class="text-white w-full max-w-crypto px-5 pt-16 pb-8 flex flex-col items-center gap-6 relative sm:pt-20 md:pt-25 lg:gap-8 md:max-w-2xl lg:max-w-4xl">
     <div class="w-full">
         <div class="flex justify-center">
-            <h1 class="text-4xl font-bold m-0 flex justify-center gap-2 sm:text-5xl md:text-6xl lg:text-7xl">History</h1>
+            <h1 class="text-3xl font-bold m-0 text-center sm:text-4xl md:text-5xl">History</h1>
         </div>
     </div>
 
-    <div class="w-full">
-        <p class="text-crypto-text-muted text-center m-0 text-lg font-normal max-w-80 mx-auto sm:text-xl md:text-2xl lg:max-w-96">
-            Your transactions will be displayed here
-        </p>
+    <div class="w-full flex-1 overflow-y-auto max-h-screen pb-32">
+        <div class="transaction-container w-full">
+            <div class="flex items-center justify-center py-20">
+                <div class="text-crypto-text-muted text-center">
+                    <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-crypto-text-muted mx-auto mb-4"></div>
+                    <p class="text-sm">Loading transactions...</p>
+                </div>
+            </div>
+        </div>
     </div>
-
 </div>
 
 <script type="module" src="typescript/TransactionHistory.ts"></script>
