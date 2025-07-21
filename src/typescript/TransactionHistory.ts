@@ -23,9 +23,6 @@ class TransactionHistory {
         }
 
         try {
-            // First create mock transactions if none exist
-            await this.createMockTransactions(wallet);
-
             const response = await fetch(`${this.apiUrl}/transaction/list?wallet=${wallet}`);
             const data = await response.json();
 
@@ -40,27 +37,18 @@ class TransactionHistory {
         }
     }
 
-    async createMockTransactions(wallet: string): Promise<void> {
-        try {
-            await fetch(`${this.apiUrl}/transaction/mock`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({ wallet })
-            });
-        } catch (error) {
-            console.error('Failed to create mock transactions:', error);
-        }
-    }
-
     private groupTransactionsByDate(transactions: Transaction[]): GroupedTransactions {
         const grouped: GroupedTransactions = {};
         const today = new Date();
         const yesterday = new Date(today);
         yesterday.setDate(yesterday.getDate() - 1);
 
-        transactions.forEach(tx => {
+        // Sort transactions by timestamp (newest first)
+        const sortedTransactions = transactions.sort((a, b) =>
+            new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
+        );
+
+        sortedTransactions.forEach(tx => {
             const txDate = new Date(tx.timestamp);
             let dateKey: string;
 
@@ -112,6 +100,17 @@ class TransactionHistory {
     private renderTransactions(transactions: Transaction[]): void {
         const container = document.querySelector('.transaction-container');
         if (!container) return;
+
+        if (transactions.length === 0) {
+            container.innerHTML = `
+                <div class="flex items-center justify-center py-20">
+                    <div class="text-crypto-text-muted text-center">
+                        <p class="text-sm">No transactions found</p>
+                    </div>
+                </div>
+            `;
+            return;
+        }
 
         const grouped = this.groupTransactionsByDate(transactions);
 
