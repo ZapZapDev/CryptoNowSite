@@ -17,19 +17,31 @@ class TransactionHistory {
 
     async loadTransactions(): Promise<void> {
         const wallet = localStorage.getItem('walletAddress');
+        console.log(`=== FRONTEND DEBUG ===`);
+        console.log(`Wallet from localStorage: ${wallet}`);
+
         if (!wallet) {
             alert('No wallet found');
             return;
         }
 
         try {
+            console.log(`Making request to: ${this.apiUrl}/transaction/list?wallet=${wallet}`);
+
             const response = await fetch(`${this.apiUrl}/transaction/list?wallet=${wallet}`);
+
+            console.log(`Response status: ${response.status}`);
+            console.log(`Response ok: ${response.ok}`);
+
             const data = await response.json();
+
+            console.log(`Response data:`, data);
 
             if (!data.success) {
                 throw new Error(data.error);
             }
 
+            console.log(`Received ${data.data.transactions.length} transactions`);
             this.renderTransactions(data.data.transactions);
         } catch (error) {
             console.error('Failed to load transactions:', error);
