@@ -19,7 +19,7 @@ class TransactionHistory {
     private currentPage = 1;
     private isLoading = false;
     private hasMore = true;
-    private limit = 30; // Больше транзакций за раз
+    private limit = 50; // Увеличил до 50 транзакций за раз
 
     async loadTransactions(): Promise<void> {
         const wallet = localStorage.getItem('walletAddress');
@@ -69,7 +69,8 @@ class TransactionHistory {
             }
 
             const data = await response.json();
-            console.log(`⚡ Page ${page} loaded via Alchemy: ${data.data.transactions.length} transactions`);
+            console.log(`⚡ Page ${page} ULTIMATE SPEED: ${data.data.transactions.length} transactions`);
+            console.log(`📊 Total signatures fetched: ${data.data.pagination.totalFetched}`);
 
             if (!data.success) {
                 throw new Error(data.error || 'Unknown server error');
@@ -110,9 +111,9 @@ class TransactionHistory {
                     this.showError('Request timeout - trying again...');
                     setTimeout(() => this.fetchTransactions(wallet, 1), 2000);
                 } else if (error.message.includes('Failed to fetch')) {
-                    this.showError('Alchemy connection failed. Checking server...');
+                    this.showError('ULTIMATE server connection failed. Check if server is running!');
                 } else {
-                    this.showError(`Alchemy error: ${error.message}`);
+                    this.showError(`ULTIMATE error: ${error.message}`);
                 }
             } else {
                 this.showLoadMoreError();
@@ -130,7 +131,7 @@ class TransactionHistory {
             const windowHeight = window.innerHeight;
             const documentHeight = document.documentElement.scrollHeight;
 
-            const threshold = documentHeight - windowHeight - 20; // Подгружаем еще раньше
+            const threshold = documentHeight - windowHeight - 10; // Подгружаем практически мгновенно
 
             if (scrollTop > threshold && this.hasMore && !this.isLoading) {
                 console.log(`Loading next page ${this.currentPage + 1}...`);
@@ -165,8 +166,8 @@ class TransactionHistory {
             <div class="flex items-center justify-center py-20">
                 <div class="text-crypto-text-muted text-center">
                     <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-crypto-text-muted mx-auto mb-4"></div>
-                    <p class="text-sm">Loading via Alchemy ⚡</p>
-                    <p class="text-xs mt-1">Super fast blockchain data</p>
+                    <p class="text-sm">ULTIMATE Alchemy Power ⚡</p>
+                    <p class="text-xs mt-1">Loading ALL transaction history...</p>
                 </div>
             </div>
         `;
@@ -420,7 +421,8 @@ class TransactionHistory {
                 <div class="flex items-center justify-center py-8">
                     <div class="text-crypto-text-muted text-center">
                         <div class="w-12 h-px bg-crypto-border mx-auto mb-3"></div>
-                        <p class="text-xs">All transactions loaded</p>
+                        <p class="text-xs">ALL transactions loaded!</p>
+                        <p class="text-xs mt-1">🎯 From the very first transaction</p>
                     </div>
                 </div>
             `;
