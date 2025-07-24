@@ -13,20 +13,13 @@ interface GroupedTransactions {
     [date: string]: Transaction[];
 }
 
-interface PaginationInfo {
-    page: number;
-    limit: number;
-    hasMore: boolean;
-    totalFetched: number;
-}
-
 class TransactionHistory {
     private apiUrl = 'http://localhost:3001/api';
     private transactions: Transaction[] = [];
     private currentPage = 1;
     private isLoading = false;
     private hasMore = true;
-    private limit = 10;
+    private limit = 30; // Больше транзакций за раз
 
     async loadTransactions(): Promise<void> {
         const wallet = localStorage.getItem('walletAddress');
@@ -38,14 +31,13 @@ class TransactionHistory {
             return;
         }
 
-        // Первоначальная загрузка
         this.showInitialLoading();
         await this.fetchTransactions(wallet, 1);
         this.setupInfiniteScroll(wallet);
     }
 
     private async fetchTransactions(wallet: string, page: number): Promise<void> {
-        if (this.isLoading || !this.hasMore) return;
+        if (this.isLoading) return;
 
         this.isLoading = true;
 
@@ -57,7 +49,7 @@ class TransactionHistory {
             }
 
             const controller = new AbortController();
-            const timeoutId = setTimeout(() => controller.abort(), 15000);
+            const timeoutId = setTimeout(() => controller.abort(), 6000); // Еще быстрее
 
             const response = await fetch(
                 `${this.apiUrl}/transaction/list?wallet=${wallet}&page=${page}&limit=${this.limit}`,
@@ -77,28 +69,34 @@ class TransactionHistory {
             }
 
             const data = await response.json();
-            console.log(`Page ${page} response:`, data);
+            console.log(`⚡ Page ${page} loaded via Alchemy: ${data.data.transactions.length} transactions`);
 
             if (!data.success) {
                 throw new Error(data.error || 'Unknown server error');
             }
 
-            // Добавляем новые транзакции к существующим
             const newTransactions = data.data.transactions;
 
             if (page === 1) {
                 this.transactions = newTransactions;
             } else {
-                // Фильтруем дубликаты
                 const existingIds = new Set(this.transactions.map(tx => tx.id));
                 const uniqueNewTransactions = newTransactions.filter(tx => !existingIds.has(tx.id));
                 this.transactions.push(...uniqueNewTransactions);
+
+                console.log(`Added ${uniqueNewTransactions.length} new unique transactions`);
             }
 
             this.hasMore = data.data.pagination.hasMore;
+
+            if (newTransactions.length < this.limit) {
+                this.hasMore = false;
+                console.log('Reached end of transactions');
+            }
+
             this.currentPage = page;
 
-            console.log(`Total transactions loaded: ${this.transactions.length}, hasMore: ${this.hasMore}`);
+            console.log(`Total loaded: ${this.transactions.length}, hasMore: ${this.hasMore}`);
 
             this.renderAllTransactions();
             this.hideLoading();
@@ -109,14 +107,14 @@ class TransactionHistory {
 
             if (page === 1) {
                 if (error.name === 'AbortError') {
-                    this.showError('Request timeout - please try again');
+                    this.showError('Request timeout - trying again...');
+                    setTimeout(() => this.fetchTransactions(wallet, 1), 2000);
                 } else if (error.message.includes('Failed to fetch')) {
-                    this.showError('Cannot connect to server. Make sure the server is running on http://localhost:3001');
+                    this.showError('Alchemy connection failed. Checking server...');
                 } else {
-                    this.showError(`Failed to load transactions: ${error.message}`);
+                    this.showError(`Alchemy error: ${error.message}`);
                 }
             } else {
-                // Для ошибок при загрузке следующих страниц показываем уведомление
                 this.showLoadMoreError();
             }
         }
@@ -132,11 +130,10 @@ class TransactionHistory {
             const windowHeight = window.innerHeight;
             const documentHeight = document.documentElement.scrollHeight;
 
-            // Загружаем следующую страницу когда остается 200px до конца
-            const threshold = documentHeight - windowHeight - 200;
+            const threshold = documentHeight - windowHeight - 20; // Подгружаем еще раньше
 
             if (scrollTop > threshold && this.hasMore && !this.isLoading) {
-                console.log('Loading next page...');
+                console.log(`Loading next page ${this.currentPage + 1}...`);
                 this.fetchTransactions(wallet, this.currentPage + 1);
             }
 
@@ -151,6 +148,13 @@ class TransactionHistory {
         };
 
         window.addEventListener('scroll', onScroll, { passive: true });
+
+        window.addEventListener('resize', () => {
+            if (!ticking) {
+                requestAnimationFrame(checkScroll);
+                ticking = true;
+            }
+        }, { passive: true });
     }
 
     private showInitialLoading(): void {
@@ -161,7 +165,8 @@ class TransactionHistory {
             <div class="flex items-center justify-center py-20">
                 <div class="text-crypto-text-muted text-center">
                     <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-crypto-text-muted mx-auto mb-4"></div>
-                    <p class="text-sm">Loading transactions...</p>
+                    <p class="text-sm">Loading via Alchemy ⚡</p>
+                    <p class="text-xs mt-1">Super fast blockchain data</p>
                 </div>
             </div>
         `;
@@ -410,7 +415,6 @@ class TransactionHistory {
             `;
         });
 
-        // Добавляем индикатор окончания если больше нет данных
         if (!this.hasMore) {
             html += `
                 <div class="flex items-center justify-center py-8">
@@ -426,12 +430,40 @@ class TransactionHistory {
     }
 }
 
-// Глобальная переменная для доступа к методам
+declare global {
+    interface Window {
+        transactionHistory: TransactionHistory;
+    }
+}
+
 let transactionHistory: TransactionHistory;
 
-// Initialize when DOM loads
 window.addEventListener('DOMContentLoaded', () => {
+    const style = document.createElement('style');
+    style.textContent = `
+        ::-webkit-scrollbar {
+            width: 0px;
+            background: transparent;
+        }
+        
+        html, body {
+            scrollbar-width: none;
+            -ms-overflow-style: none;
+        }
+        
+        * {
+            scrollbar-width: none;
+            -ms-overflow-style: none;
+        }
+        
+        *::-webkit-scrollbar {
+            width: 0px;
+            background: transparent;
+        }
+    `;
+    document.head.appendChild(style);
+
     transactionHistory = new TransactionHistory();
-    (window as any).transactionHistory = transactionHistory; // Для доступа из onclick
+    window.transactionHistory = transactionHistory;
     transactionHistory.loadTransactions();
 });
