@@ -13,11 +13,11 @@ class TransactionHistory {
         if (!this.container) return;
 
         this.container.innerHTML = `
-            <div class="flex items-center justify-center py-20">
+            <div class="flex items-center justify-center">
                 <div class="text-center max-w-md">
                    
                    
-                    <h2 class="text-xl font-bold text-white mb-3">Wait!</h2>
+                    <h1 class="text-4xl font-bold text-white mb-3">Wait!</h1>
                     <p class="text-crypto-text-muted text-sm mb-6">
                         This feature is currently under development. 
                         We're working hard to bring you comprehensive transaction tracking.

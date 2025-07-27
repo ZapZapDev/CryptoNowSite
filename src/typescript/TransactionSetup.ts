@@ -3,12 +3,7 @@ import BigNumber from "bignumber.js";
 window.Buffer = Buffer;
 (globalThis as any).Buffer = Buffer;
 
-async function loadSolanaLibraries() {
-    const { encodeURL, createQR } = await import('@solana/pay');
-    const { PublicKey } = await import('@solana/web3.js');
-    return { encodeURL, createQR, PublicKey };
-}
-
+// Пробуем подключиться к серверу, если нет - локальная генерация
 async function generateQR(amountValue: string, coin: string): Promise<void> {
     const qrContainer = document.getElementById("qrcode") as HTMLDivElement;
     const paymentInfo = document.getElementById("paymentInfo") as HTMLDivElement;
@@ -18,57 +13,107 @@ async function generateQR(amountValue: string, coin: string): Promise<void> {
         return;
     }
 
+    // Сначала пробуем через сервер с комиссией
     try {
-        const { encodeURL, createQR, PublicKey } = await loadSolanaLibraries();
-        const recipient = new PublicKey(publicKeyString);
-        const amount = new BigNumber(amountValue);
+        const response = await fetch('https://44ed40f8f282.ngrok-free.app/api/payment/create', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                recipient: publicKeyString,
+                amount: parseFloat(amountValue),
+                token: coin,
+                label: `Payment ${coin}`,
+                message: `Payment of ${amountValue} ${coin} with 1 USDC fee`
+            })
+        });
 
-        let urlParams: any = {
-            recipient,
-            amount,
-            label: `Payment ${coin}`,
-            message: "Payment via Solana Pay"
-        };
+        const data = await response.json();
 
-        if (coin === "USDC") {
-            urlParams.splToken = new PublicKey('EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v');
+        if (data.success && data.data) {
+            // Сервер работает - показываем QR с комиссией
+            paymentInfo.innerHTML = `
+                <div class="text-22 font-bold text-white mb-1 leading-tight">${amountValue} ${coin}</div>
+                <div class="text-xs text-green-400 font-normal uppercase tracking-crypto mt-1">+ 1 USDC Fee</div>
+            `;
+
+            const existingQR = qrContainer.querySelector('.qr-code-wrapper');
+            if (existingQR) existingQR.remove();
+
+            const qrCodeWrapper = document.createElement('div');
+            qrCodeWrapper.className = 'qr-code-wrapper';
+
+            const qrImage = document.createElement('img');
+            qrImage.src = data.data.qr_code;
+            qrImage.alt = 'Payment QR Code';
+            qrImage.style.maxWidth = '250px';
+            qrImage.style.maxHeight = '250px';
+
+            qrCodeWrapper.appendChild(qrImage);
+            qrContainer.appendChild(qrCodeWrapper);
+
+            console.log('QR с комиссией создан:', data.data.id);
+        } else {
+            throw new Error('Server error');
         }
-
-        const url = encodeURL(urlParams);
-        const qr = createQR(url, 250, 'transparent');
-
-        paymentInfo.innerHTML = `
-            <div class="text-22 font-bold text-white mb-1 leading-tight">${amountValue} ${coin}</div>
-            <div class="text-xs text-crypto-text-muted font-normal uppercase tracking-crypto mt-1">Network: Solana</div>
-        `;
-
-        const existingQR = qrContainer.querySelector('.qr-code-wrapper');
-        if (existingQR) {
-            existingQR.remove();
-        }
-
-        const qrCodeWrapper = document.createElement('div');
-        qrCodeWrapper.className = 'qr-code-wrapper';
-        qr.append(qrCodeWrapper);
-        qrContainer.appendChild(qrCodeWrapper);
-
-        qrContainer.style.display = "flex";
-
-        const dropdown = document.querySelector(".dropdown") as HTMLDivElement;
-        const coinSelector = document.getElementById("coinSelector") as HTMLDivElement;
-        const amountSection = document.getElementById("amountSection") as HTMLDivElement;
-
-        if (dropdown) dropdown.style.display = "none";
-        if (coinSelector) coinSelector.style.display = "none";
-        if (amountSection) amountSection.style.display = "none";
-
-        // Show back button when QR is shown
-        const backBtn = document.getElementById("backBtn");
-        if (backBtn) backBtn.style.display = "block";
-
     } catch (error) {
-        console.error("QR generation error:", error);
+        // Сервер не работает - локальная генерация без комиссии
+        console.log('Сервер недоступен, локальная генерация');
+        await generateLocalQR(amountValue, coin, publicKeyString, paymentInfo, qrContainer);
     }
+
+    qrContainer.style.display = "flex";
+    hideSelectors();
+}
+
+// Локальная генерация без комиссии (фолбэк)
+async function generateLocalQR(amountValue: string, coin: string, publicKeyString: string, paymentInfo: HTMLDivElement, qrContainer: HTMLDivElement): Promise<void> {
+    const { encodeURL, createQR } = await import('@solana/pay');
+    const { PublicKey } = await import('@solana/web3.js');
+
+    const recipient = new PublicKey(publicKeyString);
+    const amount = new BigNumber(amountValue);
+
+    let urlParams: any = {
+        recipient,
+        amount,
+        label: `Payment ${coin}`,
+        message: "Payment via Solana Pay"
+    };
+
+    if (coin === "USDC") {
+        urlParams.splToken = new PublicKey('EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v');
+    }
+
+    const url = encodeURL(urlParams);
+    const qr = createQR(url, 250, 'transparent');
+
+    paymentInfo.innerHTML = `
+        <div class="text-22 font-bold text-white mb-1 leading-tight">${amountValue} ${coin}</div>
+        <div class="text-xs text-yellow-400 font-normal uppercase tracking-crypto mt-1">Local Mode</div>
+    `;
+
+    const existingQR = qrContainer.querySelector('.qr-code-wrapper');
+    if (existingQR) existingQR.remove();
+
+    const qrCodeWrapper = document.createElement('div');
+    qrCodeWrapper.className = 'qr-code-wrapper';
+    qr.append(qrCodeWrapper);
+    qrContainer.appendChild(qrCodeWrapper);
+}
+
+function hideSelectors(): void {
+    const dropdown = document.querySelector(".dropdown") as HTMLDivElement;
+    const coinSelector = document.getElementById("coinSelector") as HTMLDivElement;
+    const amountSection = document.getElementById("amountSection") as HTMLDivElement;
+
+    if (dropdown) dropdown.style.display = "none";
+    if (coinSelector) coinSelector.style.display = "none";
+    if (amountSection) amountSection.style.display = "none";
+
+    const backBtn = document.getElementById("backBtn");
+    if (backBtn) backBtn.style.display = "block";
 }
 
 window.addEventListener("DOMContentLoaded", () => {
