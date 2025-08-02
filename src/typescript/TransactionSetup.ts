@@ -1,122 +1,50 @@
 import { Buffer } from "buffer";
-import BigNumber from "bignumber.js";
 window.Buffer = Buffer;
 (globalThis as any).Buffer = Buffer;
 
-// Константы
-const SERVER_URL = 'https://d660c79c0512.ngrok-free.app';
-const FALLBACK_TIMEOUT = 10000; // 10 секунд на ответ сервера
+const SERVER_URL = 'http://zapzap666.xyz:8080';
 
-// Основная функция генерации QR
 async function generateQR(amountValue: string, coin: string): Promise<void> {
+    console.log('Starting QR generation:', { amountValue, coin });
+
     const qrContainer = document.getElementById("qrcode") as HTMLDivElement;
     const paymentInfo = document.getElementById("paymentInfo") as HTMLDivElement;
     const publicKeyString = localStorage.getItem("walletAddress");
 
+    console.log('Wallet address from localStorage:', publicKeyString);
+
     if (!publicKeyString || !amountValue || isNaN(Number(amountValue)) || Number(amountValue) <= 0) {
-        console.error("Invalid input:", { publicKeyString, amountValue });
+        console.error('Validation failed:', { publicKeyString: !!publicKeyString, amountValue, isValid: !isNaN(Number(amountValue)) && Number(amountValue) > 0 });
         showError("Invalid wallet address or amount");
         return;
     }
 
-    console.log("Generating QR for:", { amount: amountValue, coin, wallet: publicKeyString });
-
-    // Показываем лоадер
     showLoader(qrContainer, paymentInfo);
 
     try {
-        // Сначала пробуем через сервер с комиссией
-        const serverSuccess = await generateServerQR(amountValue, coin, publicKeyString, paymentInfo, qrContainer);
-
-        if (!serverSuccess) {
-            // Фолбэк на локальную генерацию
-            console.log("Fallback to local QR generation");
-            await generateLocalQR(amountValue, coin, publicKeyString, paymentInfo, qrContainer);
-        }
-    } catch (error) {
-        console.error("QR generation failed:", error);
-        showError("Failed to generate QR code");
-        return;
-    }
-
-    qrContainer.style.display = "flex";
-    hideSelectors();
-}
-
-// Функция для показа лоадера
-function showLoader(qrContainer: HTMLDivElement, paymentInfo: HTMLDivElement): void {
-    paymentInfo.innerHTML = `
-        <div class="text-crypto-text-muted text-sm">
-            <div class="animate-spin rounded-full h-4 w-4 border-b-2 border-crypto-text-muted mx-auto mb-2"></div>
-            Generating payment...
-        </div>
-    `;
-    qrContainer.style.display = "flex";
-}
-
-// Функция для показа ошибки
-function showError(message: string): void {
-    const qrContainer = document.getElementById("qrcode") as HTMLDivElement;
-    const paymentInfo = document.getElementById("paymentInfo") as HTMLDivElement;
-
-    paymentInfo.innerHTML = `
-        <div class="text-red-400 text-sm text-center">
-            ⚠️ ${message}
-        </div>
-    `;
-    qrContainer.style.display = "flex";
-}
-
-// Серверная генерация QR с комиссией
-async function generateServerQR(
-    amountValue: string,
-    coin: string,
-    publicKeyString: string,
-    paymentInfo: HTMLDivElement,
-    qrContainer: HTMLDivElement
-): Promise<boolean> {
-    try {
-        console.log("Attempting server QR generation...");
-
-        const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), FALLBACK_TIMEOUT);
-
         const response = await fetch(`${SERVER_URL}/api/payment/create`, {
             method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'Accept': 'application/json',
-            },
+            headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
                 recipient: publicKeyString,
                 amount: parseFloat(amountValue),
-                token: coin,
-                label: `Payment ${coin}`,
-                message: `Payment of ${amountValue} ${coin} with 1 USDC fee`
-            }),
-            signal: controller.signal
+                token: coin
+            })
         });
-
-        clearTimeout(timeoutId);
-
-        console.log("Server response status:", response.status);
 
         if (!response.ok) {
             const errorText = await response.text();
-            console.error("Server error response:", errorText);
-            return false;
+            throw new Error(`Server error: ${response.status} - ${errorText}`);
         }
 
         const data = await response.json();
-        console.log("Server response data:", data);
 
-        if (data.success && data.data && data.data.qr_code) {
-            // Успешно получили QR от сервера
+        if (data.success && data.data?.qr_code) {
+            const payment = data.data;
+
             paymentInfo.innerHTML = `
                 <div class="text-center">
                     <div class="text-22 font-bold text-white mb-1 leading-tight">${amountValue} ${coin}</div>
-                    <div class="text-xs text-green-400 font-normal uppercase tracking-crypto mt-1">+ 1 USDC Fee</div>
-                    <div class="text-xs text-crypto-text-muted mt-1">Server Mode</div>
                 </div>
             `;
 
@@ -127,89 +55,51 @@ async function generateServerQR(
             qrCodeWrapper.className = 'qr-code-wrapper';
 
             const qrImage = document.createElement('img');
-            qrImage.src = data.data.qr_code;
+            qrImage.src = payment.qr_code;
             qrImage.alt = 'Payment QR Code';
             qrImage.style.maxWidth = '250px';
             qrImage.style.maxHeight = '250px';
+
+            qrImage.onload = () => console.log('QR image loaded successfully');
             qrImage.onerror = () => {
-                console.error("QR image failed to load");
+                console.error('QR image failed to load');
                 showError("QR code image failed to load");
             };
 
             qrCodeWrapper.appendChild(qrImage);
             qrContainer.appendChild(qrCodeWrapper);
 
-            console.log('Server QR created successfully:', data.data.id);
-            return true;
+            qrContainer.style.display = "flex";
+            hideSelectors();
         } else {
-            console.error('Invalid server response:', data);
-            return false;
+            throw new Error('Invalid server response');
         }
     } catch (error: any) {
-        if (error.name === 'AbortError') {
-            console.log('Server request timed out');
-        } else {
-            console.error('Server QR generation failed:', error);
-        }
-        return false;
+        console.error('QR generation failed:', error);
+        showError(`Failed to generate QR code: ${error.message}`);
     }
 }
 
-// Локальная генерация без комиссии (фолбэк)
-async function generateLocalQR(
-    amountValue: string,
-    coin: string,
-    publicKeyString: string,
-    paymentInfo: HTMLDivElement,
-    qrContainer: HTMLDivElement
-): Promise<void> {
-    try {
-        console.log("Starting local QR generation...");
+function showLoader(qrContainer: HTMLDivElement, paymentInfo: HTMLDivElement): void {
+    paymentInfo.innerHTML = `
+        <div class="text-crypto-text-muted text-sm">
+            <div class="animate-spin rounded-full h-4 w-4 border-b-2 border-crypto-text-muted mx-auto mb-2"></div>
+            Creating payment...
+        </div>
+    `;
+    qrContainer.style.display = "flex";
+}
 
-        const { encodeURL, createQR } = await import('@solana/pay');
-        const { PublicKey } = await import('@solana/web3.js');
+function showError(message: string): void {
+    const qrContainer = document.getElementById("qrcode") as HTMLDivElement;
+    const paymentInfo = document.getElementById("paymentInfo") as HTMLDivElement;
 
-        const recipient = new PublicKey(publicKeyString);
-        const amount = new BigNumber(amountValue);
-
-        let urlParams: any = {
-            recipient,
-            amount,
-            label: `Payment ${coin}`,
-            message: "Payment via Solana Pay"
-        };
-
-        if (coin === "USDC") {
-            urlParams.splToken = new PublicKey('EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v');
-        } else if (coin === "USDT") {
-            urlParams.splToken = new PublicKey('Es9vMFrzaCERmJfrF4H2FYD4KCoNkY11McCe8BenwNYB');
-        }
-
-        const url = encodeURL(urlParams);
-        const qr = createQR(url, 250, 'transparent');
-
-        paymentInfo.innerHTML = `
-            <div class="text-center">
-                <div class="text-22 font-bold text-white mb-1 leading-tight">${amountValue} ${coin}</div>
-                <div class="text-xs text-yellow-400 font-normal uppercase tracking-crypto mt-1">Local Mode</div>
-                <div class="text-xs text-crypto-text-muted mt-1">No Fee</div>
-            </div>
-        `;
-
-        const existingQR = qrContainer.querySelector('.qr-code-wrapper');
-        if (existingQR) existingQR.remove();
-
-        const qrCodeWrapper = document.createElement('div');
-        qrCodeWrapper.className = 'qr-code-wrapper';
-        qr.append(qrCodeWrapper);
-        qrContainer.appendChild(qrCodeWrapper);
-
-        console.log('Local QR created successfully');
-    } catch (error) {
-        console.error('Local QR generation failed:', error);
-        showError("Failed to generate local QR code");
-        throw error;
-    }
+    paymentInfo.innerHTML = `
+        <div class="text-red-400 text-sm text-center">
+            ${message}
+        </div>
+    `;
+    qrContainer.style.display = "flex";
 }
 
 function hideSelectors(): void {
@@ -222,38 +112,22 @@ function hideSelectors(): void {
     if (amountSection) amountSection.style.display = "none";
 }
 
-// Функция для тестирования подключения к серверу
-async function testServerConnection(): Promise<boolean> {
+async function testServerConnection(): Promise<void> {
     try {
-        const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 3000);
-
-        const response = await fetch(`${SERVER_URL}/`, {
-            method: 'GET',
-            headers: {
-                'bypass-tunnel-reminder': 'true',
-                'User-Agent': 'CryptoNow-App/1.0'
-            },
-            signal: controller.signal
-        });
-
-        clearTimeout(timeoutId);
-
-        const isConnected = response.ok;
-        console.log(`Server connection test: ${isConnected ? 'SUCCESS' : 'FAILED'}`);
-        return isConnected;
+        const response = await fetch(`${SERVER_URL}/api/test`);
+        if (response.ok) {
+            const data = await response.json();
+            console.log('Server test successful:', data);
+        } else {
+            console.error('Server test failed:', response.status);
+        }
     } catch (error) {
-        console.log('Server connection test: FAILED -', error);
-        return false;
+        console.error('Server connection test failed:', error);
     }
 }
 
-window.addEventListener("DOMContentLoaded", async () => {
-    console.log("TransactionSetup loaded");
-
-    // Тестируем подключение к серверу при загрузке
-    const serverAvailable = await testServerConnection();
-    console.log(`Server available: ${serverAvailable}`);
+window.addEventListener("DOMContentLoaded", () => {
+    testServerConnection();
 
     const dropdownBtn = document.getElementById("dropdownBtn") as HTMLButtonElement;
     const dropdownContent = document.getElementById("dropdownContent") as HTMLDivElement;
@@ -265,18 +139,12 @@ window.addEventListener("DOMContentLoaded", async () => {
     const amountInput = document.getElementById("amountInput") as HTMLInputElement;
     const generateBtn = document.getElementById("generateBtn") as HTMLButtonElement;
 
-    let selectedCoin = "SOL"; // Изменили дефолт на SOL
+    let selectedCoin = "SOL";
     qrContainer.style.display = "none";
 
-    // Показываем статус сервера в интерфейсе
-    if (!serverAvailable) {
-        const statusIndicator = document.createElement('div');
-        statusIndicator.innerHTML = `
-            <div class="text-xs text-yellow-400 text-center mb-2">
-                ⚠️ Server offline - local mode only
-            </div>
-        `;
-        dropdownBtn.parentNode?.insertBefore(statusIndicator, dropdownBtn);
+    if (!dropdownBtn || !dropdownContent || !dropdownArrow) {
+        console.error('Critical dropdown elements missing');
+        return;
     }
 
     dropdownBtn.addEventListener("click", (e) => {
@@ -302,13 +170,16 @@ window.addEventListener("DOMContentLoaded", async () => {
         item.addEventListener("click", () => {
             selectedCoin = item.getAttribute("data-coin") || "SOL";
 
-            coinItems.forEach(coin => coin.classList.remove("text-white"));
-            coinItems.forEach(coin => coin.classList.add("text-crypto-text-muted"));
+            coinItems.forEach(coin => {
+                coin.classList.remove("text-white");
+                coin.classList.add("text-crypto-text-muted");
+            });
             item.classList.remove("text-crypto-text-muted");
             item.classList.add("text-white");
 
             amountSection.style.display = "block";
             amountSection.classList.remove("hidden");
+            amountInput.focus();
         });
     });
 
@@ -321,7 +192,7 @@ window.addEventListener("DOMContentLoaded", async () => {
         }
 
         generateBtn.disabled = true;
-        generateBtn.textContent = "Generating...";
+        generateBtn.textContent = "Creating...";
 
         try {
             await generateQR(amountValue, selectedCoin);
@@ -331,9 +202,8 @@ window.addEventListener("DOMContentLoaded", async () => {
         }
     });
 
-    // Обработка Enter в поле ввода
     amountInput.addEventListener("keypress", (e) => {
-        if (e.key === "Enter") {
+        if (e.key === "Enter" && !generateBtn.disabled) {
             generateBtn.click();
         }
     });
