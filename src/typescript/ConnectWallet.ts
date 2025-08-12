@@ -1,65 +1,44 @@
 // src/typescript/ConnectWallet.ts
+interface SolanaWallet {
+    connect(): Promise<{ publicKey: { toString(): string } }>;
+    disconnect(): Promise<void>;
+    isConnected: boolean;
+}
+
+declare global {
+    interface Window {
+        solana?: SolanaWallet;
+    }
+}
 
 function formatAddress(address: string): string {
     return `${address.slice(0, 4)}...${address.slice(-4)}`;
 }
 
-async function connectWallet(): Promise<string | null> {
-    try {
-        // @ts-ignore
-        if (window.solana && window.solana.isPhantom) {
-            // @ts-ignore
-            const response = await window.solana.connect();
-            return response.publicKey.toString();
-        }
-
-        // @ts-ignore
-        if (window.solflare) {
-            // @ts-ignore
-            const response = await window.solflare.connect();
-            return response.publicKey.toString();
-        }
-
-        alert('Install Phantom or Solflare wallet');
-        return null;
-    } catch (err: any) {
-        console.error('Wallet error:', err);
-        return null;
-    }
-}
-
-async function disconnectWallet(): Promise<void> {
-    try {
-        // @ts-ignore
-        if (window.solana) await window.solana.disconnect();
-        // @ts-ignore
-        if (window.solflare) await window.solflare.disconnect();
-        localStorage.removeItem('walletAddress');
-    } catch (err) {
-        console.error('Disconnect error:', err);
-    }
-}
-
-function setupButton(buttonId: string, dropdownId: string, logoutId: string): void {
-    const button = document.getElementById(buttonId);
-    const dropdown = document.getElementById(dropdownId);
-    const logoutBtn = document.getElementById(logoutId);
+function setupWallet(buttonId: string, dropdownId: string, logoutId: string) {
+    const button = document.getElementById(buttonId) as HTMLButtonElement;
+    const dropdown = document.getElementById(dropdownId) as HTMLDivElement;
+    const logoutBtn = document.getElementById(logoutId) as HTMLButtonElement;
 
     if (!button) return;
 
-    let connected = localStorage.getItem('walletAddress');
-
-    if (connected) {
-        button.innerHTML = `${formatAddress(connected)} ▼`;
-    }
+    let connected = false;
 
     button.addEventListener('click', async () => {
         if (!connected) {
-            const address = await connectWallet();
-            if (address) {
-                connected = address;
-                localStorage.setItem('walletAddress', address);
-                button.innerHTML = `${formatAddress(address)} ▼`;
+            try {
+                if (window.solana) {
+                    const resp = await window.solana.connect();
+                    const address = resp.publicKey.toString();
+
+                    localStorage.setItem('walletAddress', address);
+                    button.textContent = formatAddress(address);
+                    connected = true;
+                } else {
+                    alert('Install Phantom wallet');
+                }
+            } catch (err) {
+                console.error('Connection failed:', err);
             }
         } else {
             if (dropdown) dropdown.classList.toggle('hidden');
@@ -68,22 +47,28 @@ function setupButton(buttonId: string, dropdownId: string, logoutId: string): vo
 
     if (logoutBtn) {
         logoutBtn.addEventListener('click', async () => {
-            await disconnectWallet();
-            connected = null;
-            button.textContent = "Connect Wallet";
+            try {
+                if (window.solana) await window.solana.disconnect();
+            } catch {}
+
+            localStorage.removeItem('walletAddress');
+            button.textContent = 'Connect Wallet';
+            connected = false;
             if (dropdown) dropdown.classList.add('hidden');
         });
     }
+
+    // Проверяем сохраненный адрес
+    const saved = localStorage.getItem('walletAddress');
+    if (saved && window.solana?.isConnected) {
+        button.textContent = formatAddress(saved);
+        connected = true;
+    }
 }
 
-function init(): void {
+document.addEventListener('DOMContentLoaded', () => {
     setTimeout(() => {
-        setupButton("walletButtonMobile", "walletDropdownMobile", "logoutButtonMobile");
-        setupButton("walletButtonDesktop", "walletDropdownDesktop", "logoutButtonDesktop");
-    }, 500);
-}
-
-// @ts-ignore
-window.initWallet = init;
-
-document.addEventListener('DOMContentLoaded', init);
+        setupWallet('walletButtonMobile', 'walletDropdownMobile', 'logoutButtonMobile');
+        setupWallet('walletButtonDesktop', 'walletDropdownDesktop', 'logoutButtonDesktop');
+    }, 1000);
+});

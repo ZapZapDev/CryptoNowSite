@@ -8,7 +8,6 @@
                 </span>
             </div>
 
-            <!-- Кнопка мобильная -->
             <div class="relative ml-auto">
                 <button id="walletButtonMobile" class="crypto-border text-white px-4 py-2 rounded-lg hover:crypto-dark transition duration-300 ease-in-out transform focus:scale-95 ml-2 flex items-center">
                     Connect Wallet
@@ -30,7 +29,6 @@
             </span>
         </div>
         <div class="pr-4 flex items-center">
-            <!-- Кнопка десктопная -->
             <div class="relative">
                 <button id="walletButtonDesktop" class="crypto-border text-white font-bold px-5 py-2 rounded-lg border border-white hover:border-gray-300 hover:scale-95 transition duration-300 ease-in-out w-auto inline-flex items-center justify-center ml-4">
                     Connect Wallet
@@ -43,32 +41,4 @@
     </div>
 </header>
 
-<script>
-    document.addEventListener('DOMContentLoaded', function () {
-        console.log('📄 Header DOM loaded');
-
-        var toggleButton = document.getElementById('mobileMenuToggle');
-        var menuLinks = document.getElementById('mobileMenuLinks');
-
-        if (toggleButton && menuLinks) {
-            toggleButton.addEventListener('click', function () {
-                menuLinks.classList.toggle('hidden');
-            });
-        }
-
-        if (window.initWallet) {
-            console.log('🔄 Calling initWallet from header');
-            window.initWallet();
-        } else {
-            console.log('⏳ Wallet script not loaded yet, waiting...');
-            setTimeout(() => {
-                if (window.initWallet) {
-                    window.initWallet();
-                }
-            }, 1000);
-        }
-    });
-</script>
-
-<!-- Подключаем TypeScript файл -->
 <script type="module" src="typescript/ConnectWallet.ts"></script>
