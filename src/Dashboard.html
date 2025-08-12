@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>CryptoNow Start</title>
+  <title>CryptoNow Dashboard</title>
   <link href="css/main.css" rel="stylesheet" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
@@ -23,11 +23,40 @@
 <!-- Контейнер для хедера -->
 <div id="header" class="fixed top-0 left-0 w-full z-50"></div>
 
+<!-- Основной контент -->
+<div class="text-white w-full max-w-crypto px-5 pt-32 pb-8 flex flex-col items-center gap-6 relative">
+  <div class="w-full text-center">
+    <h1 class="text-4xl font-bold mb-8">Dashboard</h1>
+  </div>
+
+  <div class="w-full flex flex-col gap-4">
+    <button
+            onclick="window.location.href='TransactionSetup.html'"
+            class="bg-gray-800 border border-gray-600 text-white py-4 px-7 rounded-2xl text-lg font-semibold cursor-pointer transition-all duration-200 hover:bg-gray-700 hover:scale-105"
+    >
+      <i class="fa-solid fa-qrcode mr-3"></i>
+      Generate QR Code
+    </button>
+
+    <button
+            onclick="window.location.href='TransactionHistory.html'"
+            class="bg-gray-800 border border-gray-600 text-white py-4 px-7 rounded-2xl text-lg font-semibold cursor-pointer transition-all duration-200 hover:bg-gray-700 hover:scale-105"
+    >
+      <i class="fa-solid fa-history mr-3"></i>
+      Transaction History
+    </button>
+  </div>
+</div>
+
+<!-- Подключаем скрипт кошелька -->
+<script type="module" src="typescript/ConnectWallet.js"></script>
+
 <script>
   fetch('header.html')
           .then(res => res.text())
           .then(html => {
             document.getElementById('header').innerHTML = html;
+            console.log('✅ Header loaded in Dashboard');
           })
           .catch(e => console.error('Header load error:', e));
 </script>

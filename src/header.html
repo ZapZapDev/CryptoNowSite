@@ -22,17 +22,6 @@
         </div>
     </div>
 
-    <script>
-        document.addEventListener('DOMContentLoaded', function () {
-            var toggleButton = document.getElementById('mobileMenuToggle');
-            var menuLinks = document.getElementById('mobileMenuLinks');
-
-            toggleButton.addEventListener('click', function () {
-                menuLinks.classList.toggle('hidden');
-            });
-        });
-    </script>
-
     <!-- Desktop menu -->
     <div class="container mx-auto hidden lg:flex justify-between items-center px-2" id="desktop-menu">
         <div class="text-white text-2xl font-bold ml-12">
@@ -53,3 +42,33 @@
         </div>
     </div>
 </header>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        console.log('📄 Header DOM loaded');
+
+        var toggleButton = document.getElementById('mobileMenuToggle');
+        var menuLinks = document.getElementById('mobileMenuLinks');
+
+        if (toggleButton && menuLinks) {
+            toggleButton.addEventListener('click', function () {
+                menuLinks.classList.toggle('hidden');
+            });
+        }
+
+        if (window.initWallet) {
+            console.log('🔄 Calling initWallet from header');
+            window.initWallet();
+        } else {
+            console.log('⏳ Wallet script not loaded yet, waiting...');
+            setTimeout(() => {
+                if (window.initWallet) {
+                    window.initWallet();
+                }
+            }, 1000);
+        }
+    });
+</script>
+
+<!-- Подключаем TypeScript файл -->
+<script type="module" src="typescript/ConnectWallet.ts"></script>
