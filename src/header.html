@@ -1,0 +1,55 @@
+<header class="crypto-card fixed z-50 w-full top-0 py-4">
+    <!-- Mobile menu -->
+    <div class="container-fluid lg:hidden w-full relative" id="mobileMenu">
+        <div class="flex items-center p-4">
+            <div class="text-white text-2xl font-bold" id="top">
+                <span class="flex items-center ml-5">
+                    CryptoNow
+                </span>
+            </div>
+
+            <!-- Кнопка мобильная -->
+            <div class="relative ml-auto">
+                <button id="walletButtonMobile" class="crypto-border text-white px-4 py-2 rounded-lg hover:crypto-dark transition duration-300 ease-in-out transform focus:scale-95 ml-2 flex items-center">
+                    Connect Wallet
+                </button>
+                <div id="walletDropdownMobile" class="absolute right-0 mt-2 w-40 bg-gray-800 rounded-lg shadow-lg hidden">
+                    <button id="logoutButtonMobile" class="block w-full text-left px-4 py-2 text-white hover:bg-gray-700 rounded-t-lg">Logout</button>
+                </div>
+            </div>
+
+            <button id="mobileMenuToggle" class="text-white text-2xl hover:text-gray-400 transition p-4 flex items-center mr-2"></button>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            var toggleButton = document.getElementById('mobileMenuToggle');
+            var menuLinks = document.getElementById('mobileMenuLinks');
+
+            toggleButton.addEventListener('click', function () {
+                menuLinks.classList.toggle('hidden');
+            });
+        });
+    </script>
+
+    <!-- Desktop menu -->
+    <div class="container mx-auto hidden lg:flex justify-between items-center px-2" id="desktop-menu">
+        <div class="text-white text-2xl font-bold ml-12">
+            <span class="flex items-center">
+                CryptoNow
+            </span>
+        </div>
+        <div class="pr-4 flex items-center">
+            <!-- Кнопка десктопная -->
+            <div class="relative">
+                <button id="walletButtonDesktop" class="crypto-border text-white font-bold px-5 py-2 rounded-lg border border-white hover:border-gray-300 hover:scale-95 transition duration-300 ease-in-out w-auto inline-flex items-center justify-center ml-4">
+                    Connect Wallet
+                </button>
+                <div id="walletDropdownDesktop" class="absolute right-0 mt-2 w-40 bg-gray-800 rounded-lg shadow-lg hidden">
+                    <button id="logoutButtonDesktop" class="block w-full text-left px-4 py-2 text-white hover:bg-gray-700 rounded-t-lg">Logout</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</header>

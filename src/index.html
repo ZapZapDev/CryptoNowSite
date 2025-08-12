@@ -5,37 +5,58 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>CryptoNow Start</title>
     <link href="css/main.css" rel="stylesheet" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+            href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;800&display=swap"
+            rel="stylesheet"
+    />
+    <style>
+        body {
+            font-family: 'Nunito', sans-serif;
+        }
+    </style>
 </head>
-<body class="m-0 p-0 font-system bg-crypto-dark flex justify-center items-start min-h-screen overflow-x-hidden">
+<body class="m-0 p-0 bg-[#0c0c0c] min-h-screen overflow-x-hidden relative">
 
-<div class="text-white w-full max-w-crypto px-5 pt-16 pb-32 flex flex-col items-center gap-8 relative sm:pt-20 md:pt-25 lg:gap-12">
-    <div class="w-full">
-        <div class="flex justify-center">
-            <h1 class="text-4xl font-bold m-0 flex justify-center gap-2 sm:text-5xl md:text-6xl lg:text-7xl">CryptoNow!</h1>
-        </div>
-    </div>
 
-    <div class="w-full">
-        <p class="text-crypto-text-muted text-center m-0 text-lg font-normal max-w-80 mx-auto sm:text-xl md:text-2xl lg:max-w-96">
-            When everything is under your control — that's freedom
+<div class="flex flex-col sm:flex-row min-h-screen px-6 sm:px-20 lg:px-40 items-center sm:items-start">
+
+    <!-- Левый блок с текстом -->
+    <div class="animate__backInLeft mt-40 sm:mt-44 md:mt-40 lg:mt-60 ml-4 sm:ml-20 md:ml-20 sm:text-left">
+        <p class="text-white text-3xl sm:text-4xl md:text-5xl lg:text-7xl leading-tight font-extrabold">
+            <span class="block">CRYPTO</span>
+            <span class="block text-white/70 font-semibold">PAYMENTS</span>
+            <span class="block">YOUR WAY</span>
         </p>
+        <p class="text-lg font-bold sm:text-2xl text-gray-400 mt-2 sm:mt-4">
+            CryptoNow-Pay Now!
+        </p>
+
+        <a href="Dashboard.html">
+            <button
+                    class="mt-6 border-2 border-white hover:border-gray-300 hover:scale-95 text-white rounded-full py-2 px-6 font-semibold transition duration-300 ease-in-out w-auto inline-flex items-center justify-center"
+            >
+                <i class="fa-solid fa-rocket mr-2 sm:mr-4"></i>
+                <span class="text-lg sm:text-xl">Start</span>
+            </button>
+        </a>
     </div>
 
-    <div class="fixed bottom-10 left-1/2 transform -translate-x-1/2 w-full max-w-crypto flex flex-col gap-4 px-5">
-        <button
-                onclick="window.location.href='WriteWallet.html'"
-                class="bg-crypto-dark text-white py-4 px-7 border-none rounded-2xl text-lg font-semibold cursor-pointer shadow-crypto transition-colors duration-200 hover:bg-crypto-border sm:py-5 sm:px-8 sm:text-xl"
-        >
-            Create Wallet
-        </button>
-        <button
-                onclick="window.location.href='ImportWallet.html'"
-                class="bg-crypto-dark text-white py-4 px-7 border-none rounded-2xl text-lg font-semibold cursor-pointer shadow-crypto transition-colors duration-200 hover:bg-crypto-border sm:py-5 sm:px-8 sm:text-xl"
-        >
-            Import
-        </button>
-    </div>
 </div>
+
+<!-- Импортируем хедер -->
+<div id="header" class="fixed top-0 left-0 w-full z-50"></div>
+
+<script>
+    fetch('header.html')
+        .then(res => res.text())
+        .then(html => {
+            document.getElementById('header').innerHTML = html;
+        })
+        .catch(e => console.error('Header load error:', e));
+</script>
 
 </body>
 </html>

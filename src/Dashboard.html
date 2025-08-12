@@ -3,38 +3,33 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Dashboard</title>
+  <title>CryptoNow Start</title>
   <link href="css/main.css" rel="stylesheet" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
+          href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;800&display=swap"
+          rel="stylesheet"
+  />
+  <style>
+    body {
+      font-family: 'Nunito', sans-serif;
+    }
+  </style>
 </head>
-<body class="m-0 p-0 font-system bg-crypto-dark flex justify-center items-start min-h-screen overflow-x-hidden">
+<body class="m-0 p-0 font-system bg-[#0c0c0c] flex justify-center items-start min-h-screen overflow-x-hidden">
 
-<div class="text-white w-full max-w-crypto px-5 pt-16 pb-32 flex flex-col items-center gap-8 relative sm:pt-20 md:pt-25 lg:gap-12">
-  <div class="w-full">
-    <div class="flex justify-center">
-      <h1 class="text-4xl font-bold m-0 flex justify-center gap-2 sm:text-5xl md:text-6xl lg:text-7xl">Dashboard</h1>
-    </div>
-  </div>
+<!-- Контейнер для хедера -->
+<div id="header" class="fixed top-0 left-0 w-full z-50"></div>
 
-  <div class="fixed bottom-10 left-1/2 transform -translate-x-1/2 w-full max-w-crypto flex flex-col gap-4 px-5">
-
-    <button
-            id="TransactionHistoryButton"
-            type="button"
-            onclick="window.location.href='TransactionHistory.html'"
-            class="bg-crypto-dark text-white py-4 px-7 border-none rounded-2xl text-xl font-semibold cursor-pointer shadow-crypto transition-colors duration-200 hover:bg-crypto-border sm:py-5 sm:px-8 sm:text-2xl md:text-3xl"
-    >
-      History
-    </button>
-    <button
-            id="TransactionSetupButton"
-            type="button"
-            onclick="window.location.href='TransactionSetup.html'"
-            class="bg-crypto-dark text-white py-4 px-7 border-none rounded-2xl text-xl font-semibold cursor-pointer shadow-crypto transition-colors duration-200 hover:bg-crypto-border sm:py-5 sm:px-8 sm:text-2xl md:text-3xl"
-    >
-      Receive
-    </button>
-  </div>
-</div>
-
+<script>
+  fetch('header.html')
+          .then(res => res.text())
+          .then(html => {
+            document.getElementById('header').innerHTML = html;
+          })
+          .catch(e => console.error('Header load error:', e));
+</script>
 </body>
 </html>

@@ -4,6 +4,7 @@ module.exports = {
     theme: {
         extend: {
             colors: {
+                'black': '#0c0c0c',
                 'crypto-dark': '#171618',
                 'crypto-card': '#121112',
                 'crypto-border': '#2c2b2d',
