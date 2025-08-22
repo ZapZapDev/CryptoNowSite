@@ -15,6 +15,10 @@ class MerchantNetworks {
     private networkDescription: HTMLTextAreaElement;
     private saveNetwork: HTMLElement;
     private cancelNetwork: HTMLElement;
+    private networkViewModal: HTMLElement;
+    private networkViewBackdrop: HTMLElement;
+    private networkViewBack: HTMLElement;
+    private networkViewTitle: HTMLElement;
     private currentEditingId: string | null = null;
 
     constructor() {
@@ -26,16 +30,23 @@ class MerchantNetworks {
         this.networkDescription = document.getElementById('networkDescription') as HTMLTextAreaElement;
         this.saveNetwork = document.getElementById('saveNetwork')!;
         this.cancelNetwork = document.getElementById('cancelNetwork')!;
+        this.networkViewModal = document.getElementById('networkViewModal')!;
+        this.networkViewBackdrop = document.getElementById('networkViewBackdrop')!;
+        this.networkViewBack = document.getElementById('networkViewBack')!;
+        this.networkViewTitle = document.getElementById('networkViewTitle')!;
 
         this.initEventListeners();
         this.loadNetworks();
     }
 
     private initEventListeners(): void {
-        this.networkModalClose.addEventListener('click', () => this.closeModal());
-        this.networkModalBackdrop.addEventListener('click', () => this.closeModal());
-        this.cancelNetwork.addEventListener('click', () => this.closeModal());
+        this.networkModalClose.addEventListener('click', () => this.closeCreateModal());
+        this.networkModalBackdrop.addEventListener('click', () => this.closeCreateModal());
+        this.cancelNetwork.addEventListener('click', () => this.closeCreateModal());
         this.saveNetwork.addEventListener('click', () => this.handleSaveNetwork());
+
+        this.networkViewBack.addEventListener('click', () => this.closeViewModal());
+        this.networkViewBackdrop.addEventListener('click', () => this.closeViewModal());
 
         this.networkName.addEventListener('keypress', (e) => {
             if (e.key === 'Enter') this.handleSaveNetwork();
@@ -68,12 +79,12 @@ class MerchantNetworks {
 
         networkBlock.innerHTML = `
             <div class="flex-1 flex flex-col justify-center">
-                <h3 class="text-white text-lg font-semibold text-center truncate">${network.name || 'Сеть'}</h3>
+                <h3 class="text-white text-lg font-semibold text-center truncate">${network.name || 'Network'}</h3>
                 ${description ? `<p class="text-crypto-text-muted text-sm text-center line-clamp-3 mt-2">${description}</p>` : ''}
             </div>
         `;
 
-        networkBlock.addEventListener('click', () => this.openEditModal(network));
+        networkBlock.addEventListener('click', () => this.openViewModal(network));
         return networkBlock;
     }
 
@@ -91,29 +102,36 @@ class MerchantNetworks {
         this.currentEditingId = null;
         this.networkName.value = '';
         this.networkDescription.value = '';
-        this.showModal();
+        this.showCreateModal();
         this.networkName.focus();
     }
 
-    private openEditModal(network: Network): void {
-        this.currentEditingId = network.id;
-        this.networkName.value = network.name;
-        this.networkDescription.value = network.description;
-        this.showModal();
-        this.networkName.focus();
+    private openViewModal(network: Network): void {
+        this.networkViewTitle.textContent = network.name;
+        this.showViewModal();
     }
 
-    private showModal(): void {
+    private showCreateModal(): void {
         this.networkModal.classList.remove('hidden');
         this.networkModal.classList.add('flex');
         document.body.style.overflow = 'hidden';
     }
 
-    private closeModal(): void {
+    private closeCreateModal(): void {
         this.networkModal.classList.add('hidden');
         this.networkModal.classList.remove('flex');
         document.body.style.overflow = 'auto';
         this.currentEditingId = null;
+    }
+
+    private showViewModal(): void {
+        this.networkViewModal.classList.remove('hidden');
+        document.body.style.overflow = 'hidden';
+    }
+
+    private closeViewModal(): void {
+        this.networkViewModal.classList.add('hidden');
+        document.body.style.overflow = 'auto';
     }
 
     private handleSaveNetwork(): void {
@@ -146,7 +164,7 @@ class MerchantNetworks {
 
         this.saveNetworks();
         this.renderNetworks();
-        this.closeModal();
+        this.closeCreateModal();
     }
 
     private saveNetworks(): void {
