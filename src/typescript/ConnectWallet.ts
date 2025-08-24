@@ -5,6 +5,8 @@ import { BackpackWalletAdapter } from "@solana/wallet-adapter-backpack";
 
 type WalletType = "phantom" | "solflare" | "glow" | "backpack";
 
+const SERVER_URL = 'https://zapzap666.xyz';
+
 const walletButtonDesktop = document.getElementById("walletButtonDesktop") as HTMLButtonElement;
 const walletButtonMobile = document.getElementById("walletButtonMobile") as HTMLButtonElement;
 const walletModal = document.getElementById("walletModal") as HTMLDivElement;
@@ -37,6 +39,7 @@ function isWalletInstalled(walletType: WalletType): boolean {
 let connectedWalletType: WalletType | null = null;
 let arrowIcon: SVGElement | null = null;
 let walletDropdown: HTMLDivElement | null = null;
+let currentSessionKey: string | null = null;
 
 function shortenAddress(addr: string) {
     return addr.slice(0, 4) + "..." + addr.slice(-4);
@@ -59,32 +62,133 @@ function setArrow(up: boolean) {
     arrowIcon.style.transform = up ? "rotate(180deg)" : "rotate(0deg)";
 }
 
+// Серверная аутентификация
+async function loginToServer(walletAddress: string): Promise<string | null> {
+    try {
+        console.log('🔐 Logging in to server:', walletAddress.slice(0, 8) + '...');
+
+        const response = await fetch(`${SERVER_URL}/api/auth/login`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ walletAddress })
+        });
+
+        const data = await response.json();
+
+        console.log('📥 Server response:', {
+            success: data.success,
+            hasSessionKey: !!data.sessionKey,
+            sessionKeyPreview: data.sessionKey?.slice(0, 8) + '...',
+            error: data.error
+        });
+
+        if (data.success && data.sessionKey) {
+            console.log('✅ Server login successful');
+            return data.sessionKey;
+        } else {
+            console.error('❌ Server login failed:', data.error || 'No session key received');
+            return null;
+        }
+    } catch (error) {
+        console.error('❌ Server login error:', error);
+        return null;
+    }
+}
+
+async function validateServerSession(walletAddress: string, sessionKey: string): Promise<boolean> {
+    try {
+        console.log('🔍 Validating server session');
+        console.log('🔑 Session key:', sessionKey?.slice(0, 8) + '...');
+
+        const response = await fetch(`${SERVER_URL}/api/auth/validate`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ walletAddress, sessionKey })
+        });
+
+        const data = await response.json();
+
+        console.log('📥 Validation response:', {
+            success: data.success,
+            reason: data.reason
+        });
+
+        return data.success;
+    } catch (error) {
+        console.error('❌ Session validation error:', error);
+        return false;
+    }
+}
+
+async function logoutFromServer(walletAddress: string) {
+    try {
+        await fetch(`${SERVER_URL}/api/auth/logout`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ walletAddress })
+        });
+        console.log('🚪 Server logout successful');
+    } catch (error) {
+        console.error('❌ Server logout error:', error);
+    }
+}
+
 async function connectWallet(type: WalletType) {
     const adapter = solanaAdapters[type];
     await adapter.connect({ onlyIfTrusted: false });
     const publicKey = adapter.publicKey;
+
     if (publicKey) {
-        connectedWalletType = type;
-        localStorage.setItem("connectedWalletType", type);
-        localStorage.setItem("connectedWalletAddress", publicKey.toBase58());
-        updateWalletButton(publicKey.toBase58());
-        closeModal();
+        const walletAddress = publicKey.toBase58();
+
+        // Логинимся на сервер
+        const sessionKey = await loginToServer(walletAddress);
+
+        if (sessionKey) {
+            connectedWalletType = type;
+            currentSessionKey = sessionKey;
+
+            // Сохраняем в localStorage для авто-подключения
+            localStorage.setItem("connectedWalletType", type);
+            localStorage.setItem("connectedWalletAddress", walletAddress);
+            localStorage.setItem("sessionKey", sessionKey);
+
+            updateWalletButton(walletAddress);
+            closeModal();
+
+            console.log('✅ Wallet connected and authenticated');
+        } else {
+            alert('Failed to authenticate with server');
+        }
     }
 }
 
 function disconnectWallet() {
     if (!connectedWalletType) return;
+
     const adapter = solanaAdapters[connectedWalletType];
+    const walletAddress = localStorage.getItem("connectedWalletAddress");
+
     if (adapter.disconnect) adapter.disconnect();
 
+    // Логаут с сервера
+    if (walletAddress) {
+        logoutFromServer(walletAddress);
+    }
+
     connectedWalletType = null;
+    currentSessionKey = null;
+
     localStorage.removeItem("connectedWalletType");
     localStorage.removeItem("connectedWalletAddress");
+    localStorage.removeItem("sessionKey");
 
     walletButtonDesktop.textContent = "Connect Wallet";
     walletButtonMobile.textContent = "Connect Wallet";
     setArrow(false);
     hideDropdown();
+
+    console.log('🚪 Wallet disconnected');
 }
 
 function openModal() {
@@ -97,10 +201,11 @@ function closeModal() {
     walletModal.classList.remove("flex");
 }
 
-// === Проверка при загрузке и установка статуса Installed ===
+// === Проверка при загрузке и автоподключение ===
 window.addEventListener("load", async () => {
     const savedType = localStorage.getItem("connectedWalletType") as WalletType;
     const savedAddress = localStorage.getItem("connectedWalletAddress");
+    const savedSessionKey = localStorage.getItem("sessionKey");
 
     // Проверка и установка статуса "Installed" для каждого кошелька
     document.querySelectorAll<HTMLButtonElement>("#walletModal button[data-wallet]").forEach(btn => {
@@ -116,29 +221,41 @@ window.addEventListener("load", async () => {
                 statusSpan.classList.add("bg-green-600/20", "text-green-400", "border", "border-green-600/30");
             } else {
                 statusSpan.textContent = "";
-                // Скрываем пустой элемент полностью
                 statusSpan.style.display = "none";
             }
         }
     });
 
-    if (savedType && savedAddress) {
-        const adapter = solanaAdapters[savedType];
-        try {
-            await adapter.connect({ onlyIfTrusted: true });
-            if (adapter.connected && adapter.publicKey) {
-                connectedWalletType = savedType;
-                updateWalletButton(adapter.publicKey.toBase58());
-            } else {
+    // Автоподключение
+    if (savedType && savedAddress && savedSessionKey) {
+        console.log('🔄 Attempting auto-reconnect...');
+
+        // Валидируем сессию на сервере
+        const isValidSession = await validateServerSession(savedAddress, savedSessionKey);
+
+        if (isValidSession) {
+            const adapter = solanaAdapters[savedType];
+            try {
+                await adapter.connect({ onlyIfTrusted: true });
+                if (adapter.connected && adapter.publicKey) {
+                    connectedWalletType = savedType;
+                    currentSessionKey = savedSessionKey;
+                    updateWalletButton(adapter.publicKey.toBase58());
+                    console.log('✅ Auto-reconnect successful');
+                } else {
+                    disconnectWallet();
+                }
+            } catch {
                 disconnectWallet();
             }
-        } catch {
+        } else {
+            console.log('❌ Session invalid, clearing local storage');
             disconnectWallet();
         }
     }
 });
 
-// === Модалки ===
+// === Остальные event listeners (без изменений) ===
 walletButtonMobile.addEventListener("click", () => {
     if (!connectedWalletType) openModal();
 });
