@@ -125,21 +125,5 @@
         .catch(e => console.error('Header load error:', e));
 </script>
 
-<script type="module" src="services/apiService.js"></script>
-<script>
-    // После подключения кошелька
-    async function onWalletConnect(walletAddress) {
-        const response = await window.apiService.login(walletAddress);
-        console.log('Logged in:', response);
-
-        // Создать сеть
-        await window.apiService.createMarketNetwork('My Network', 'Description');
-
-        // Получить мои сети
-        const networks = await window.apiService.getMyMarketNetworks();
-        console.log('My networks:', networks);
-    }
-</script>
-
 </body>
 </html>
