@@ -108,7 +108,35 @@
 
         <!-- Контент сети -->
         <div class="p-4 sm:p-6 lg:p-8">
-            <!-- Здесь будет контент сети -->
+
+            <div class="relative inline-block">
+                <button id="MenuButton"
+                        class="crypto-border text-white font-bold border-2 px-5 py-2 rounded-lg border-white hover:border-gray-300 hover:scale-95 transition duration-300 ease-in-out inline-flex items-center">
+                    Menu
+                    <svg class="w-5 h-5 ml-2 transition-transform duration-200" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24">
+                        <path d="M6 9l6 6 6-6"/>
+                    </svg>
+                </button>
+                <!-- Dropdown -->
+                <div id="MenuDropdown" class="absolute hidden mt-2 bg-crypto-card border border-crypto-border rounded-lg w-40 shadow-lg z-50">
+                    <button class="w-full text-left px-4 py-2 text-crypto-text-muted  hover:bg-crypto-border transition">Add Menu</button>
+                </div>
+            </div>
+
+            <div class="relative block mt-24">
+                <button id="MarketsButton"
+                        class="crypto-border text-white font-bold border-2 px-5 py-2 rounded-lg border-white hover:border-gray-300 hover:scale-95 transition duration-300 ease-in-out inline-flex items-center">
+                    Markets
+                    <svg class="w-5 h-5 ml-2 transition-transform duration-200" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24">
+                        <path d="M6 9l6 6 6-6"/>
+                    </svg>
+                </button>
+                <!-- Dropdown -->
+                <div id="MarketsDropdown" class="absolute hidden mt-2 bg-crypto-card border border-crypto-border rounded-lg w-44 shadow-lg z-50">
+                    <button class="w-full text-left px-4 py-2 font-medium hover:bg-crypto-border transition flex items-center gap-2 text-crypto-text-muted">Add Market</button>
+                </div>
+            </div>
+
         </div>
     </div>
 </div>

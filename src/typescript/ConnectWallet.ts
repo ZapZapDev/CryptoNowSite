@@ -54,7 +54,7 @@ function updateWalletButton(address: string) {
         </svg>
     `;
     walletButtonMobile.textContent = `${shortAddr} ▼`;
-    arrowIcon = document.getElementById("walletArrow") as SVGElement;
+
 }
 
 function setArrow(up: boolean) {
