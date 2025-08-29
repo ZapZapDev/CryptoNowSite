@@ -1,4 +1,10 @@
-//Merchant.ts - Fixed TypeScript errors
+//Merchant.ts - Complete fixed version with menus
+interface Menu {
+    id: number;
+    name: string;
+    createdAt: string;
+}
+
 interface Table {
     id: number;
     number: number;
@@ -18,6 +24,7 @@ interface Network {
     description: string;
     createdAt: string;
     markets?: Market[];
+    menus?: Menu[];
 }
 
 interface ApiResponse<T = any> {
@@ -82,14 +89,6 @@ class MerchantAPI {
         });
     }
 
-    static async deleteNetwork(id: number): Promise<ApiResponse> {
-        const { walletAddress, sessionKey } = getAuthData();
-        return this.makeRequest(`/networks/${id}`, {
-            method: 'DELETE',
-            body: JSON.stringify({ walletAddress, sessionKey })
-        });
-    }
-
     // Market APIs
     static async createMarket(marketNetworkId: number, name: string): Promise<ApiResponse<Market>> {
         const { walletAddress, sessionKey } = getAuthData();
@@ -103,14 +102,6 @@ class MerchantAPI {
         const { walletAddress, sessionKey } = getAuthData();
         return this.makeRequest(`/markets/${networkId}/list`, {
             method: 'POST',
-            body: JSON.stringify({ walletAddress, sessionKey })
-        });
-    }
-
-    static async deleteMarket(id: number): Promise<ApiResponse> {
-        const { walletAddress, sessionKey } = getAuthData();
-        return this.makeRequest(`/markets/${id}`, {
-            method: 'DELETE',
             body: JSON.stringify({ walletAddress, sessionKey })
         });
     }
@@ -132,10 +123,19 @@ class MerchantAPI {
         });
     }
 
-    static async deleteTable(id: number): Promise<ApiResponse> {
+    // Menu APIs
+    static async createMenu(marketNetworkId: number, name: string): Promise<ApiResponse<Menu>> {
         const { walletAddress, sessionKey } = getAuthData();
-        return this.makeRequest(`/tables/${id}`, {
-            method: 'DELETE',
+        return this.makeRequest('/menus', {
+            method: 'POST',
+            body: JSON.stringify({ walletAddress, sessionKey, marketNetworkId, name })
+        });
+    }
+
+    static async getMenus(networkId: number): Promise<ApiResponse<Menu[]>> {
+        const { walletAddress, sessionKey } = getAuthData();
+        return this.makeRequest(`/menus/${networkId}/list`, {
+            method: 'POST',
             body: JSON.stringify({ walletAddress, sessionKey })
         });
     }
@@ -215,6 +215,13 @@ class MerchantNetworks {
     private marketName: HTMLInputElement;
     private saveMarket: HTMLElement;
 
+    // Menu Modal
+    private menuModal: HTMLElement;
+    private menuModalBackdrop: HTMLElement;
+    private menuModalClose: HTMLElement;
+    private menuName: HTMLInputElement;
+    private saveMenu: HTMLElement;
+
     // Market View Modal
     private marketViewModal: HTMLElement;
     private marketViewBackdrop: HTMLElement;
@@ -255,6 +262,13 @@ class MerchantNetworks {
         this.marketName = document.getElementById("marketName") as HTMLInputElement;
         this.saveMarket = document.getElementById("saveMarket")!;
 
+        // Menu modal elements
+        this.menuModal = document.getElementById("menuModal")!;
+        this.menuModalBackdrop = document.getElementById("menuModalBackdrop")!;
+        this.menuModalClose = document.getElementById("menuModalClose")!;
+        this.menuName = document.getElementById("menuName") as HTMLInputElement;
+        this.saveMenu = document.getElementById("saveMenu")!;
+
         // Market view modal elements
         this.marketViewModal = document.getElementById("marketViewModal")!;
         this.marketViewBackdrop = document.getElementById("marketViewBackdrop")!;
@@ -275,9 +289,9 @@ class MerchantNetworks {
         new Dropdown("MenuButton", "MenuDropdown");
         new Dropdown("MarketsButton", "MarketsDropdown");
         new Dropdown("TablesButton", "TablesDropdown");
-        new Dropdown("OrdersButton", "OrdersDropdown");
 
         document.getElementById("AddMarketButton")?.addEventListener("click", () => this.openMarketModal());
+        document.getElementById("AddMenuButton")?.addEventListener("click", () => this.openMenuModal());
         document.getElementById("AddTableButton")?.addEventListener("click", () => this.handleAddTable());
     }
 
@@ -296,6 +310,11 @@ class MerchantNetworks {
         this.marketModalClose.addEventListener("click", () => this.closeMarketModal());
         this.marketModalBackdrop.addEventListener("click", () => this.closeMarketModal());
         this.saveMarket.addEventListener("click", () => this.handleSaveMarket());
+
+        // Menu modal
+        this.menuModalClose.addEventListener("click", () => this.closeMenuModal());
+        this.menuModalBackdrop.addEventListener("click", () => this.closeMenuModal());
+        this.saveMenu.addEventListener("click", () => this.handleSaveMenu());
 
         // Market view modal
         this.marketViewBack.addEventListener("click", () => this.backToNetworkView());
@@ -351,7 +370,6 @@ class MerchantNetworks {
     private async openViewModal(network: Network): Promise<void> {
         this.currentNetworkId = network.id;
         this.networkViewTitle.textContent = network.name;
-
         this.marketsList.innerHTML = "";
 
         // Загружаем актуальные маркеты с сервера
@@ -359,10 +377,7 @@ class MerchantNetworks {
         if (response.success && response.data) {
             response.data.forEach(market => {
                 const li = document.createElement("li");
-                li.className = `
-                flex items-center gap-2 px-2 py-1 text-white hover:bg-crypto-border hover:scale-105
-                transition-all duration-200 rounded cursor-pointer
-            `;
+                li.className = "flex items-center gap-2 px-2 py-1 text-white hover:bg-crypto-border hover:scale-105 transition-all duration-200 rounded cursor-pointer";
 
                 const dot = document.createElement("span");
                 dot.className = "w-1.5 h-1.5 bg-white rounded-full flex-shrink-0";
@@ -372,10 +387,7 @@ class MerchantNetworks {
 
                 li.appendChild(dot);
                 li.appendChild(text);
-
-                // Add click handler to open market view
                 li.addEventListener("click", () => this.openMarketViewModal(market));
-
                 this.marketsList.appendChild(li);
             });
         }
@@ -423,33 +435,40 @@ class MerchantNetworks {
         this.marketModal.classList.remove("flex");
     }
 
+    /** ---------------- Menu Modal ---------------- */
+    private openMenuModal(): void {
+        if (!this.currentNetworkId) return;
+        if (!isAuthenticated()) {
+            alert('Please connect your wallet first');
+            return;
+        }
+        this.menuName.value = "";
+        this.menuModal.classList.remove("hidden");
+        this.menuModal.classList.add("flex");
+    }
+
+    private closeMenuModal(): void {
+        this.menuModal.classList.add("hidden");
+        this.menuModal.classList.remove("flex");
+    }
+
     /** ---------------- Market View Modal ---------------- */
     private openMarketViewModal(market: Market): void {
         this.currentMarketId = market.id;
         this.marketViewTitle.textContent = market.name;
-
-        // Load tables for this market
         this.loadTablesForMarket(market);
-
-        // Hide network view modal
         this.networkViewModal.classList.add("hidden");
-
-        // Show market view modal
         this.marketViewModal.classList.remove("hidden");
         document.body.style.overflow = "hidden";
     }
 
     private async loadTablesForMarket(market: Market): Promise<void> {
         this.tablesList.innerHTML = "";
-
         const response = await MerchantAPI.getTables(market.id);
         if (response.success && response.data) {
             response.data.forEach(table => {
                 const li = document.createElement("li");
-                li.className = `
-                flex items-center gap-2 px-2 py-1 text-white hover:bg-crypto-border hover:scale-105
-                transition-all duration-200 rounded cursor-pointer
-            `;
+                li.className = "flex items-center gap-2 px-2 py-1 text-white hover:bg-crypto-border hover:scale-105 transition-all duration-200 rounded cursor-pointer";
 
                 const dot = document.createElement("span");
                 dot.className = "w-1.5 h-1.5 bg-white rounded-full flex-shrink-0";
@@ -459,10 +478,7 @@ class MerchantNetworks {
 
                 li.appendChild(dot);
                 li.appendChild(text);
-
-                // Add click handler to open table view
                 li.addEventListener("click", () => this.openTableViewModal(table));
-
                 this.tablesList.appendChild(li);
             });
         }
@@ -484,11 +500,7 @@ class MerchantNetworks {
     private openTableViewModal(table: Table): void {
         this.currentTableId = table.id;
         this.tableViewTitle.textContent = `Table ${table.number}`;
-
-        // Hide market view modal
         this.marketViewModal.classList.add("hidden");
-
-        // Show table view modal
         this.tableViewModal.classList.remove("hidden");
         document.body.style.overflow = "hidden";
     }
@@ -520,15 +532,11 @@ class MerchantNetworks {
             return;
         }
 
-        console.log('🔨 Creating network:', name);
         const response = await MerchantAPI.createNetwork(name, description);
-
         if (response.success && response.data) {
-            console.log('✅ Network created successfully');
             await this.loadNetworks();
             this.closeCreateModal();
         } else {
-            console.error('❌ Failed to create network:', response.error);
             alert(response.error || 'Failed to create network');
         }
     }
@@ -542,25 +550,39 @@ class MerchantNetworks {
             return;
         }
 
-        console.log('🔨 Creating market:', name);
         const response = await MerchantAPI.createMarket(this.currentNetworkId, name);
-
         if (response.success) {
-            console.log('✅ Market created successfully');
             this.closeMarketModal();
-
-            // Обновляем вид сети
             const network = this.networks.find(n => n.id === this.currentNetworkId);
             if (network) {
                 await this.openViewModal(network);
             }
         } else {
-            console.error('❌ Failed to create market:', response.error);
             alert(response.error || 'Failed to create market');
         }
     }
 
-    /** ---------------- Table Operations ---------------- */
+    private async handleSaveMenu(): Promise<void> {
+        const name = this.menuName.value.trim();
+        if (!name || !this.currentNetworkId) return;
+
+        if (!isAuthenticated()) {
+            alert('Please connect your wallet first');
+            return;
+        }
+
+        const response = await MerchantAPI.createMenu(this.currentNetworkId, name);
+        if (response.success) {
+            this.closeMenuModal();
+            const network = this.networks.find(n => n.id === this.currentNetworkId);
+            if (network) {
+                await this.openViewModal(network);
+            }
+        } else {
+            alert(response.error || 'Failed to create menu');
+        }
+    }
+
     private async handleAddTable(): Promise<void> {
         if (!this.currentMarketId) return;
 
@@ -569,40 +591,28 @@ class MerchantNetworks {
             return;
         }
 
-        console.log('🔨 Creating table in market:', this.currentMarketId);
         const response = await MerchantAPI.createTable(this.currentMarketId);
-
         if (response.success) {
-            console.log('✅ Table created successfully');
-
-            // Reload tables for current market
             const market = { id: this.currentMarketId, name: this.marketViewTitle.textContent || '', createdAt: '' };
             await this.loadTablesForMarket(market);
         } else {
-            console.error('❌ Failed to create table:', response.error);
             alert(response.error || 'Failed to create table');
         }
     }
 
     private async loadNetworks(): Promise<void> {
         if (!isAuthenticated()) {
-            console.log('⚠️ User not authenticated, showing empty state');
             this.networks = [];
             this.renderNetworks();
             return;
         }
 
-        console.log('📥 Loading networks from server...');
         const response = await MerchantAPI.getNetworks();
-
         if (response.success && response.data) {
             this.networks = response.data;
-            console.log('✅ Loaded', this.networks.length, 'networks');
         } else {
-            console.error('❌ Failed to load networks:', response.error);
             this.networks = [];
         }
-
         this.renderNetworks();
     }
 }
