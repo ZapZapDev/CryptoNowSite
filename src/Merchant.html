@@ -1,17 +1,4 @@
-<script type="module" src="/typescript/ConnectWallet.ts"></script>
-<script type="module" src="/typescript/Merchant.ts"></script>
-
-<script>
-    fetch('header.html')
-        .then(res => res.text())
-        .then(html => {
-            document.getElementById('header').innerHTML = html;
-        })
-        .catch(e => console.error('Header load error:', e));
-</script>
-
-</body>
-</html><!DOCTYPE html>
+<!DOCTYPE html>
 <!-- Merchant.html -->
 <html lang="en">
 <head>
@@ -130,6 +117,7 @@
                 <!-- Dropdown -->
                 <div id="MenuDropdown" class="absolute hidden mt-2 bg-crypto-card border border-crypto-border rounded-lg w-full shadow-lg z-50">
                     <button id="AddMenuButton" class="w-full text-left px-4 py-2 font-medium hover:bg-crypto-border transition flex items-center gap-2 text-crypto-text-muted">Add Menu</button>
+                    <div id="menusList" class="p-2 text-sm text-white whitespace-nowrap"></div>
                 </div>
             </div>
 
@@ -156,6 +144,7 @@
     </div>
 </div>
 
+<!-- Market Modal -->
 <div id="marketModal" class="fixed inset-0 hidden items-center justify-center z-[80]">
     <!-- Backdrop -->
     <div class="absolute inset-0 bg-black/30 backdrop-blur-sm" id="marketModalBackdrop"></div>
@@ -309,6 +298,48 @@
     </div>
 </div>
 
+<!-- NEW: Menu View Modal -->
+<div id="menuViewModal" class="fixed inset-0 hidden z-[70] flex items-center justify-center p-4">
+    <!-- Backdrop с блюром -->
+    <div class="absolute inset-0 bg-black/30 backdrop-blur-sm" id="menuViewBackdrop"></div>
+
+    <!-- Основное содержимое -->
+    <div class="relative bg-[#0c0c0c] border-2 border-crypto-border rounded-2xl w-1/2 h-[90vh] overflow-y-auto">
+        <!-- Верхняя панель -->
+        <div class="bg-[#0c0c0c] p-4 border-b border-crypto-border flex items-center gap-4">
+            <!-- Кнопка назад -->
+            <button id="menuViewBack" class="bg-crypto-card border border-crypto-border rounded-lg w-10 h-10 flex items-center justify-center hover:bg-crypto-border hover:scale-105 transition">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-crypto-text-muted">
+                    <path d="m15 18-6-6 6-6"/>
+                </svg>
+            </button>
+
+            <!-- Название меню -->
+            <h2 id="menuViewTitle" class="text-white text-2xl sm:text-3xl lg:text-4xl font-bold flex-1 text-center mr-14">Menu Name</h2>
+        </div>
+
+        <!-- Контент меню -->
+        <div class="relative bg-[#0c0c0c] ml-12 mt-24 border-2 border-crypto-border rounded-2xl w-[90%]  max-h-[80vh] overflow-y-auto">
+
+            <!-- Содержимое -->
+            <div class="bg-[#0c0c0c] p-8">
+
+            </div>
+        </div>
+    </div>
+</div>
+
+<script type="module" src="/typescript/ConnectWallet.ts"></script>
+<script type="module" src="/typescript/Merchant.ts"></script>
+
+<script>
+    fetch('header.html')
+        .then(res => res.text())
+        .then(html => {
+            document.getElementById('header').innerHTML = html;
+        })
+        .catch(e => console.error('Header load error:', e));
+</script>
 
 </body>
 </html>

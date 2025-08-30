@@ -1,4 +1,4 @@
-//Merchant.ts - Complete fixed version with menus
+//Merchant.ts - Complete with Menu View functionality
 interface Menu {
     id: number;
     name: string;
@@ -206,6 +206,7 @@ class MerchantNetworks {
     private networkViewBack: HTMLElement;
     private networkViewTitle: HTMLElement;
     private marketsList: HTMLElement;
+    private menusList: HTMLElement; // NEW: for showing menus in dropdown
     private currentNetworkId: number | null = null;
 
     // Market Modal
@@ -221,6 +222,13 @@ class MerchantNetworks {
     private menuModalClose: HTMLElement;
     private menuName: HTMLInputElement;
     private saveMenu: HTMLElement;
+
+    // NEW: Menu View Modal
+    private menuViewModal: HTMLElement;
+    private menuViewBackdrop: HTMLElement;
+    private menuViewBack: HTMLElement;
+    private menuViewTitle: HTMLElement;
+    private currentMenuId: number | null = null;
 
     // Market View Modal
     private marketViewModal: HTMLElement;
@@ -254,6 +262,7 @@ class MerchantNetworks {
         this.networkViewBack = document.getElementById("networkViewBack")!;
         this.networkViewTitle = document.getElementById("networkViewTitle")!;
         this.marketsList = document.getElementById("marketsList")!;
+        this.menusList = document.getElementById("menusList")!; // NEW
 
         // Market modal elements
         this.marketModal = document.getElementById("marketModal")!;
@@ -268,6 +277,12 @@ class MerchantNetworks {
         this.menuModalClose = document.getElementById("menuModalClose")!;
         this.menuName = document.getElementById("menuName") as HTMLInputElement;
         this.saveMenu = document.getElementById("saveMenu")!;
+
+        // NEW: Menu view modal elements
+        this.menuViewModal = document.getElementById("menuViewModal")!;
+        this.menuViewBackdrop = document.getElementById("menuViewBackdrop")!;
+        this.menuViewBack = document.getElementById("menuViewBack")!;
+        this.menuViewTitle = document.getElementById("menuViewTitle")!;
 
         // Market view modal elements
         this.marketViewModal = document.getElementById("marketViewModal")!;
@@ -315,6 +330,10 @@ class MerchantNetworks {
         this.menuModalClose.addEventListener("click", () => this.closeMenuModal());
         this.menuModalBackdrop.addEventListener("click", () => this.closeMenuModal());
         this.saveMenu.addEventListener("click", () => this.handleSaveMenu());
+
+        // NEW: Menu view modal
+        this.menuViewBack.addEventListener("click", () => this.backToNetworkViewFromMenu());
+        this.menuViewBackdrop.addEventListener("click", () => this.closeMenuViewModal());
 
         // Market view modal
         this.marketViewBack.addEventListener("click", () => this.backToNetworkView());
@@ -371,11 +390,12 @@ class MerchantNetworks {
         this.currentNetworkId = network.id;
         this.networkViewTitle.textContent = network.name;
         this.marketsList.innerHTML = "";
+        this.menusList.innerHTML = ""; // NEW: Clear menus list
 
         // Загружаем актуальные маркеты с сервера
-        const response = await MerchantAPI.getMarkets(network.id);
-        if (response.success && response.data) {
-            response.data.forEach(market => {
+        const marketsResponse = await MerchantAPI.getMarkets(network.id);
+        if (marketsResponse.success && marketsResponse.data) {
+            marketsResponse.data.forEach(market => {
                 const li = document.createElement("li");
                 li.className = "flex items-center gap-2 px-2 py-1 text-white hover:bg-crypto-border hover:scale-105 transition-all duration-200 rounded cursor-pointer";
 
@@ -389,6 +409,26 @@ class MerchantNetworks {
                 li.appendChild(text);
                 li.addEventListener("click", () => this.openMarketViewModal(market));
                 this.marketsList.appendChild(li);
+            });
+        }
+
+        // NEW: Загружаем актуальные меню с сервера
+        const menusResponse = await MerchantAPI.getMenus(network.id);
+        if (menusResponse.success && menusResponse.data) {
+            menusResponse.data.forEach(menu => {
+                const li = document.createElement("li");
+                li.className = "flex items-center gap-2 px-2 py-1 text-white hover:bg-crypto-border hover:scale-105 transition-all duration-200 rounded cursor-pointer";
+
+                const dot = document.createElement("span");
+                dot.className = "w-1.5 h-1.5 bg-white rounded-full flex-shrink-0";
+
+                const text = document.createElement("span");
+                text.textContent = menu.name;
+
+                li.appendChild(dot);
+                li.appendChild(text);
+                li.addEventListener("click", () => this.openMenuViewModal(menu)); // NEW: Click handler
+                this.menusList.appendChild(li);
             });
         }
 
@@ -450,6 +490,27 @@ class MerchantNetworks {
     private closeMenuModal(): void {
         this.menuModal.classList.add("hidden");
         this.menuModal.classList.remove("flex");
+    }
+
+    /** ---------------- NEW: Menu View Modal ---------------- */
+    private openMenuViewModal(menu: Menu): void {
+        this.currentMenuId = menu.id;
+        this.menuViewTitle.textContent = menu.name;
+        this.networkViewModal.classList.add("hidden");
+        this.menuViewModal.classList.remove("hidden");
+        document.body.style.overflow = "hidden";
+    }
+
+    private closeMenuViewModal(): void {
+        this.menuViewModal.classList.add("hidden");
+        document.body.style.overflow = "auto";
+        this.currentMenuId = null;
+    }
+
+    private backToNetworkViewFromMenu(): void {
+        this.menuViewModal.classList.add("hidden");
+        this.networkViewModal.classList.remove("hidden");
+        this.currentMenuId = null;
     }
 
     /** ---------------- Market View Modal ---------------- */
@@ -576,7 +637,7 @@ class MerchantNetworks {
             this.closeMenuModal();
             const network = this.networks.find(n => n.id === this.currentNetworkId);
             if (network) {
-                await this.openViewModal(network);
+                await this.openViewModal(network); // Refresh network view to show new menu
             }
         } else {
             alert(response.error || 'Failed to create menu');
