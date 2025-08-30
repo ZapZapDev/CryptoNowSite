@@ -1,4 +1,4 @@
-//Merchant.ts - Complete with Menu View functionality
+//Merchant.ts - МИНИМАЛЬНЫЕ ИЗМЕНЕНИЯ для удаления
 interface Menu {
     id: number;
     name: string;
@@ -139,6 +139,12 @@ class MerchantAPI {
             body: JSON.stringify({ walletAddress, sessionKey })
         });
     }
+
+    // НОВОЕ: Delete APIs (4 строки)
+    static async delete(type: string, id: number): Promise<ApiResponse> {
+        const { walletAddress, sessionKey } = getAuthData();
+        return this.makeRequest(`/${type}s/${id}`, { method: 'DELETE', body: JSON.stringify({ walletAddress, sessionKey }) });
+    }
 }
 
 /** ---------------- Dropdown ---------------- */
@@ -206,7 +212,7 @@ class MerchantNetworks {
     private networkViewBack: HTMLElement;
     private networkViewTitle: HTMLElement;
     private marketsList: HTMLElement;
-    private menusList: HTMLElement; // NEW: for showing menus in dropdown
+    private menusList: HTMLElement;
     private currentNetworkId: number | null = null;
 
     // Market Modal
@@ -223,7 +229,7 @@ class MerchantNetworks {
     private menuName: HTMLInputElement;
     private saveMenu: HTMLElement;
 
-    // NEW: Menu View Modal
+    // Menu View Modal
     private menuViewModal: HTMLElement;
     private menuViewBackdrop: HTMLElement;
     private menuViewBack: HTMLElement;
@@ -262,7 +268,7 @@ class MerchantNetworks {
         this.networkViewBack = document.getElementById("networkViewBack")!;
         this.networkViewTitle = document.getElementById("networkViewTitle")!;
         this.marketsList = document.getElementById("marketsList")!;
-        this.menusList = document.getElementById("menusList")!; // NEW
+        this.menusList = document.getElementById("menusList")!;
 
         // Market modal elements
         this.marketModal = document.getElementById("marketModal")!;
@@ -278,7 +284,7 @@ class MerchantNetworks {
         this.menuName = document.getElementById("menuName") as HTMLInputElement;
         this.saveMenu = document.getElementById("saveMenu")!;
 
-        // NEW: Menu view modal elements
+        // Menu view modal elements
         this.menuViewModal = document.getElementById("menuViewModal")!;
         this.menuViewBackdrop = document.getElementById("menuViewBackdrop")!;
         this.menuViewBack = document.getElementById("menuViewBack")!;
@@ -331,7 +337,7 @@ class MerchantNetworks {
         this.menuModalBackdrop.addEventListener("click", () => this.closeMenuModal());
         this.saveMenu.addEventListener("click", () => this.handleSaveMenu());
 
-        // NEW: Menu view modal
+        // Menu view modal
         this.menuViewBack.addEventListener("click", () => this.backToNetworkViewFromMenu());
         this.menuViewBackdrop.addEventListener("click", () => this.closeMenuViewModal());
 
@@ -390,7 +396,10 @@ class MerchantNetworks {
         this.currentNetworkId = network.id;
         this.networkViewTitle.textContent = network.name;
         this.marketsList.innerHTML = "";
-        this.menusList.innerHTML = ""; // NEW: Clear menus list
+        this.menusList.innerHTML = "";
+
+        // НОВОЕ: Добавляем кнопку удаления (2 строки)
+        this.addDeleteButton(this.networkViewModal, () => this.handleDelete('network', network.id, () => this.closeViewModal()));
 
         // Загружаем актуальные маркеты с сервера
         const marketsResponse = await MerchantAPI.getMarkets(network.id);
@@ -412,7 +421,7 @@ class MerchantNetworks {
             });
         }
 
-        // NEW: Загружаем актуальные меню с сервера
+        // Загружаем актуальные меню с сервера
         const menusResponse = await MerchantAPI.getMenus(network.id);
         if (menusResponse.success && menusResponse.data) {
             menusResponse.data.forEach(menu => {
@@ -427,7 +436,7 @@ class MerchantNetworks {
 
                 li.appendChild(dot);
                 li.appendChild(text);
-                li.addEventListener("click", () => this.openMenuViewModal(menu)); // NEW: Click handler
+                li.addEventListener("click", () => this.openMenuViewModal(menu));
                 this.menusList.appendChild(li);
             });
         }
@@ -456,6 +465,7 @@ class MerchantNetworks {
         this.networkViewModal.classList.add("hidden");
         document.body.style.overflow = "auto";
         this.currentNetworkId = null;
+        this.removeDeleteButtons();
     }
 
     /** ---------------- Market Modals ---------------- */
@@ -492,12 +502,16 @@ class MerchantNetworks {
         this.menuModal.classList.remove("flex");
     }
 
-    /** ---------------- NEW: Menu View Modal ---------------- */
+    /** ---------------- Menu View Modal ---------------- */
     private openMenuViewModal(menu: Menu): void {
         this.currentMenuId = menu.id;
         this.menuViewTitle.textContent = menu.name;
         this.networkViewModal.classList.add("hidden");
         this.menuViewModal.classList.remove("hidden");
+
+        // НОВОЕ: Добавляем кнопку удаления (1 строка)
+        this.addDeleteButton(this.menuViewModal, () => this.handleDelete('menu', menu.id, () => this.backToNetworkViewFromMenu()));
+
         document.body.style.overflow = "hidden";
     }
 
@@ -505,12 +519,14 @@ class MerchantNetworks {
         this.menuViewModal.classList.add("hidden");
         document.body.style.overflow = "auto";
         this.currentMenuId = null;
+        this.removeDeleteButtons();
     }
 
     private backToNetworkViewFromMenu(): void {
         this.menuViewModal.classList.add("hidden");
         this.networkViewModal.classList.remove("hidden");
         this.currentMenuId = null;
+        this.removeDeleteButtons();
     }
 
     /** ---------------- Market View Modal ---------------- */
@@ -520,6 +536,10 @@ class MerchantNetworks {
         this.loadTablesForMarket(market);
         this.networkViewModal.classList.add("hidden");
         this.marketViewModal.classList.remove("hidden");
+
+        // НОВОЕ: Добавляем кнопку удаления (1 строка)
+        this.addDeleteButton(this.marketViewModal, () => this.handleDelete('market', market.id, () => this.backToNetworkView()));
+
         document.body.style.overflow = "hidden";
     }
 
@@ -549,12 +569,14 @@ class MerchantNetworks {
         this.marketViewModal.classList.add("hidden");
         document.body.style.overflow = "auto";
         this.currentMarketId = null;
+        this.removeDeleteButtons();
     }
 
     private backToNetworkView(): void {
         this.marketViewModal.classList.add("hidden");
         this.networkViewModal.classList.remove("hidden");
         this.currentMarketId = null;
+        this.removeDeleteButtons();
     }
 
     /** ---------------- Table View Modal ---------------- */
@@ -563,6 +585,10 @@ class MerchantNetworks {
         this.tableViewTitle.textContent = `Table ${table.number}`;
         this.marketViewModal.classList.add("hidden");
         this.tableViewModal.classList.remove("hidden");
+
+        // НОВОЕ: Добавляем кнопку удаления (1 строка)
+        this.addDeleteButton(this.tableViewModal, () => this.handleDelete('table', table.id, () => this.backToMarketView()));
+
         document.body.style.overflow = "hidden";
     }
 
@@ -570,12 +596,33 @@ class MerchantNetworks {
         this.tableViewModal.classList.add("hidden");
         document.body.style.overflow = "auto";
         this.currentTableId = null;
+        this.removeDeleteButtons();
     }
 
     private backToMarketView(): void {
         this.tableViewModal.classList.add("hidden");
         this.marketViewModal.classList.remove("hidden");
         this.currentTableId = null;
+        this.removeDeleteButtons();
+    }
+
+    /** ---------------- НОВОЕ: МИНИМАЛЬНАЯ DELETE ЛОГИКА (10 строк) ---------------- */
+
+    private addDeleteButton(modal: HTMLElement, onClick: () => void): void {
+        this.removeDeleteButtons();
+        const btn = document.createElement("button");
+        btn.className = "delete-btn absolute bottom-4 right-4 w-10 h-10 bg-crypto-card border border-red-600 rounded-lg flex items-center justify-center hover:bg-crypto-border transition z-[80]";
+        btn.innerHTML = `<svg class="w-4 h-4 text-red-600" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>`;
+        btn.onclick = onClick;
+        modal.appendChild(btn);
+    }
+
+    private removeDeleteButtons(): void { document.querySelectorAll('.delete-btn').forEach(b => b.remove()); }
+
+    private async handleDelete(type: string, id: number, onSuccess: () => void): Promise<void> {
+        if (!confirm('Delete this item?')) return;
+        const res = await MerchantAPI.delete(type, id);
+        if (res.success) { onSuccess(); await this.loadNetworks(); } else alert(res.error || 'Delete failed');
     }
 
     /** ---------------- CRUD Operations ---------------- */
@@ -637,7 +684,7 @@ class MerchantNetworks {
             this.closeMenuModal();
             const network = this.networks.find(n => n.id === this.currentNetworkId);
             if (network) {
-                await this.openViewModal(network); // Refresh network view to show new menu
+                await this.openViewModal(network);
             }
         } else {
             alert(response.error || 'Failed to create menu');
