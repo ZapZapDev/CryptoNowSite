@@ -398,9 +398,6 @@ class MerchantNetworks {
         this.marketsList.innerHTML = "";
         this.menusList.innerHTML = "";
 
-        // НОВОЕ: Добавляем кнопку удаления (2 строки)
-        this.addDeleteButton(this.networkViewModal, () => this.handleDelete('network', network.id, () => this.closeViewModal()));
-
         // Загружаем актуальные маркеты с сервера
         const marketsResponse = await MerchantAPI.getMarkets(network.id);
         if (marketsResponse.success && marketsResponse.data) {
@@ -442,6 +439,9 @@ class MerchantNetworks {
         }
 
         this.showViewModal();
+
+        // ДОБАВЬ ЭТУ СТРОКУ: Добавляем кнопку удаления после показа модала
+        this.addDeleteButton(this.networkViewModal, () => this.handleDelete('network', network.id, () => this.closeViewModal()));
     }
 
     private showCreateModal(): void {
@@ -509,10 +509,10 @@ class MerchantNetworks {
         this.networkViewModal.classList.add("hidden");
         this.menuViewModal.classList.remove("hidden");
 
-        // НОВОЕ: Добавляем кнопку удаления (1 строка)
-        this.addDeleteButton(this.menuViewModal, () => this.handleDelete('menu', menu.id, () => this.backToNetworkViewFromMenu()));
-
         document.body.style.overflow = "hidden";
+
+        // ДОБАВЬ ЭТУ СТРОКУ: Добавляем кнопку удаления после показа модала
+        this.addDeleteButton(this.menuViewModal, () => this.handleDelete('menu', menu.id, () => this.backToNetworkViewFromMenu()));
     }
 
     private closeMenuViewModal(): void {
@@ -527,6 +527,14 @@ class MerchantNetworks {
         this.networkViewModal.classList.remove("hidden");
         this.currentMenuId = null;
         this.removeDeleteButtons();
+
+        // ДОБАВЬ ЭТИ СТРОКИ: Восстанавливаем кнопку удаления для network
+        if (this.currentNetworkId) {
+            const network = this.networks.find(n => n.id === this.currentNetworkId);
+            if (network) {
+                this.addDeleteButton(this.networkViewModal, () => this.handleDelete('network', network.id, () => this.closeViewModal()));
+            }
+        }
     }
 
     /** ---------------- Market View Modal ---------------- */
@@ -537,10 +545,9 @@ class MerchantNetworks {
         this.networkViewModal.classList.add("hidden");
         this.marketViewModal.classList.remove("hidden");
 
-        // НОВОЕ: Добавляем кнопку удаления (1 строка)
-        this.addDeleteButton(this.marketViewModal, () => this.handleDelete('market', market.id, () => this.backToNetworkView()));
-
         document.body.style.overflow = "hidden";
+
+        this.addDeleteButton(this.marketViewModal, () => this.handleDelete('market', market.id, () => this.backToNetworkView()));
     }
 
     private async loadTablesForMarket(market: Market): Promise<void> {
@@ -577,6 +584,13 @@ class MerchantNetworks {
         this.networkViewModal.classList.remove("hidden");
         this.currentMarketId = null;
         this.removeDeleteButtons();
+
+        if (this.currentNetworkId) {
+            const network = this.networks.find(n => n.id === this.currentNetworkId);
+            if (network) {
+                this.addDeleteButton(this.networkViewModal, () => this.handleDelete('network', network.id, () => this.closeViewModal()));
+            }
+        }
     }
 
     /** ---------------- Table View Modal ---------------- */
@@ -586,10 +600,10 @@ class MerchantNetworks {
         this.marketViewModal.classList.add("hidden");
         this.tableViewModal.classList.remove("hidden");
 
-        // НОВОЕ: Добавляем кнопку удаления (1 строка)
-        this.addDeleteButton(this.tableViewModal, () => this.handleDelete('table', table.id, () => this.backToMarketView()));
-
         document.body.style.overflow = "hidden";
+
+        // ДОБАВЬ ЭТУ СТРОКУ: Добавляем кнопку удаления после показа модала
+        this.addDeleteButton(this.tableViewModal, () => this.handleDelete('table', table.id, () => this.backToMarketView()));
     }
 
     private closeTableViewModal(): void {
@@ -604,17 +618,38 @@ class MerchantNetworks {
         this.marketViewModal.classList.remove("hidden");
         this.currentTableId = null;
         this.removeDeleteButtons();
+
+        // ДОБАВЬ ЭТИ СТРОКИ: Восстанавливаем кнопку удаления для market
+        if (this.currentMarketId) {
+            const market = { id: this.currentMarketId, name: this.marketViewTitle.textContent || '', createdAt: '' };
+            this.addDeleteButton(this.marketViewModal, () => this.handleDelete('market', market.id, () => this.backToNetworkView()));
+        }
     }
 
     /** ---------------- НОВОЕ: МИНИМАЛЬНАЯ DELETE ЛОГИКА (10 строк) ---------------- */
 
     private addDeleteButton(modal: HTMLElement, onClick: () => void): void {
         this.removeDeleteButtons();
+
+        // Находим внутренний блок с контентом (где p-4 sm:p-6 lg:p-8)
+        const contentBlock = modal.querySelector('.p-4, .sm\\:p-6, .lg\\:p-8') as HTMLElement ||
+            modal.querySelector('[class*="p-"]') as HTMLElement;
+
+        if (!contentBlock) {
+            console.warn('Content block not found for delete button');
+            return;
+        }
+
+        // Делаем контентный блок относительным для позиционирования
+        contentBlock.style.position = 'relative';
+
         const btn = document.createElement("button");
-        btn.className = "delete-btn absolute bottom-4 right-4 w-10 h-10 bg-crypto-card border border-red-600 rounded-lg flex items-center justify-center hover:bg-crypto-border transition z-[80]";
+        btn.className = "delete-btn absolute bottom-4 right-4 w-10 h-10 bg-crypto-card border border-red-600 rounded-lg flex items-center justify-center hover:bg-crypto-border transition z-10";
         btn.innerHTML = `<svg class="w-4 h-4 text-red-600" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>`;
         btn.onclick = onClick;
-        modal.appendChild(btn);
+
+        // Добавляем кнопку в контентный блок, а не в сам модал
+        contentBlock.appendChild(btn);
     }
 
     private removeDeleteButtons(): void { document.querySelectorAll('.delete-btn').forEach(b => b.remove()); }
